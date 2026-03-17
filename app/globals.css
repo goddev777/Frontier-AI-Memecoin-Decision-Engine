@@ -1,0 +1,127 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --canvas: #061017;
+  --panel: rgba(10, 19, 28, 0.88);
+  --panel-strong: rgba(5, 12, 18, 0.96);
+  --ink: #f3fbff;
+  --mute: #8aa0b3;
+  --line: rgba(143, 173, 198, 0.18);
+  --lime: #9dfc66;
+  --ember: #ff7f6c;
+  --cyan: #58e6ff;
+  --gold: #ffd66b;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background:
+    radial-gradient(circle at top, rgba(88, 230, 255, 0.12), transparent 30%),
+    radial-gradient(circle at 20% 20%, rgba(157, 252, 102, 0.08), transparent 24%),
+    radial-gradient(circle at 80% 0%, rgba(255, 214, 107, 0.08), transparent 20%),
+    var(--canvas);
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--ink);
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.2), transparent 30%),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+    linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+    transparent;
+  background-size: auto, 72px 72px, 72px 72px, auto;
+  font-family: var(--font-sans), "Segoe UI", sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+::selection {
+  background: rgba(88, 230, 255, 0.3);
+  color: var(--ink);
+}
+
+@layer base {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-display), var(--font-sans), sans-serif;
+    letter-spacing: -0.02em;
+  }
+}
+
+@layer components {
+  .terminal-shell {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent 35%),
+      var(--panel);
+    box-shadow:
+      0 24px 80px rgba(0, 0, 0, 0.45),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+  }
+
+  .terminal-shell::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 24px 24px;
+    mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.45), transparent 90%);
+  }
+
+  .terminal-chip {
+    border: 1px solid rgba(143, 173, 198, 0.18);
+    background: rgba(255, 255, 255, 0.035);
+    backdrop-filter: blur(12px);
+  }
+
+  .terminal-heading {
+    font-family: var(--font-mono), "SFMono-Regular", Consolas, monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--mute);
+  }
+
+  .terminal-rule {
+    height: 1px;
+    width: 100%;
+    background: linear-gradient(90deg, rgba(88, 230, 255, 0.35), rgba(157, 252, 102, 0.1), transparent);
+  }
+
+  .terminal-number {
+    font-family: var(--font-mono), "SFMono-Regular", Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
