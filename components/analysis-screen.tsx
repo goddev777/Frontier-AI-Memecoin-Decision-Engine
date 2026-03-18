@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { BarChart3, Gauge, ShieldAlert } from "lucide-react";
+import { Bolt, Radar, ShieldAlert, Waypoints } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 
 import { fetchAnalysisReport, isProbablySolanaMint, normalizeMint } from "@/app/_lib/analysis-api";
@@ -79,54 +79,105 @@ export function AnalysisScreen({ mode, initialMint }: AnalysisScreenProps) {
     };
   }, [activeMint, refreshKey]);
 
-  const terminalStats = [
+  const commandDeck = [
     {
-      label: "Focus",
-      value: "Facts / Signals / Scenarios",
-      icon: BarChart3
+      label: "Scan",
+      value: "Any Solana mint",
+      detail: "Paste, route, and normalize fast.",
+      icon: Bolt,
+      tone: "text-cyan"
     },
     {
-      label: "Sizing",
-      value: "Tier + Horizon Above Fold",
-      icon: Gauge
+      label: "Read",
+      value: "Narrative + structure",
+      detail: "Facts first, story second, traps visible.",
+      icon: Radar,
+      tone: "text-white/80"
     },
     {
-      label: "Warnings",
-      value: "Security + Breakers Surface First",
-      icon: ShieldAlert
+      label: "Defend",
+      value: "Risks above fold",
+      detail: "Security, bundles, and breakers stay prominent.",
+      icon: ShieldAlert,
+      tone: "text-ember"
     },
     {
-      label: "AI Layer",
-      value: "OpenRouter free-model enrichment is optional; deterministic output stays first-class.",
-      icon: Gauge
+      label: "Route",
+      value: "Desktop dense / mobile clean",
+      detail: "Built to stay useful when the screen gets tight.",
+      icon: Waypoints,
+      tone: "text-lime"
     }
-  ];
+  ] as const;
 
   return (
-    <main className="min-h-screen px-4 py-6 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl space-y-4 sm:space-y-5">
-        <div className="grid gap-3 lg:grid-cols-[1.2fr,0.8fr]">
+    <main className="relative min-h-screen px-4 py-6 sm:px-6 lg:px-8">
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-80 bg-[radial-gradient(circle_at_top,rgba(99,232,255,0.08),transparent_65%)]" />
+
+      <div className="relative mx-auto max-w-7xl space-y-5 sm:space-y-6">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+          <div className="max-w-3xl">
+            <div className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[11px] uppercase tracking-[0.24em] text-mute">
+              {mode === "home" ? "Discovery route" : "Dedicated token route"}
+            </div>
+            <h1 className="mt-3 text-2xl font-semibold tracking-[-0.04em] text-ink sm:text-3xl">
+              Fast Solana contract reads for memecoin traders.
+            </h1>
+            <p className="mt-2 text-sm leading-6 text-mute sm:text-base">
+              Clean hierarchy, sharp signal separation, and quick route-hopping when you are comparing setups.
+            </p>
+          </div>
+
+          <div className="rounded-[24px] border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-mute">
+            {activeMint ? `Live mint loaded: ${activeMint.slice(0, 6)}...${activeMint.slice(-6)}` : "No mint loaded yet"}
+          </div>
+        </div>
+
+        <div className="grid gap-4 xl:grid-cols-[1.24fr,0.76fr]">
           <MintSearch initialMint={activeMint} mode={mode} />
 
-          <aside className="terminal-shell rounded-[28px] p-4 sm:p-5">
-            <p className="terminal-heading">Desk framing</p>
-            <div className="mt-4 space-y-3">
-              {terminalStats.map((item) => {
+          <aside className="terminal-shell rounded-[32px] p-5 sm:p-6">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="terminal-heading">Command deck</p>
+                <p className="mt-2 text-base font-semibold text-ink">Built for fast trench decisions, not dashboard tourism.</p>
+              </div>
+              <div className="rounded-full border border-lime/20 bg-lime/[0.08] px-3 py-1 text-xs uppercase tracking-[0.18em] text-lime">
+                Mobile ready
+              </div>
+            </div>
+
+            <div className="mt-5 grid gap-3">
+              {commandDeck.map((item) => {
                 const Icon = item.icon;
 
                 return (
-                  <div
-                    key={item.label}
-                    className="rounded-2xl border border-white/10 bg-white/5 p-4"
-                  >
-                    <div className="flex items-center gap-2 text-cyan">
+                  <div key={item.label} className="rounded-[24px] border border-white/10 bg-white/[0.04] p-4">
+                    <div className={`flex items-center gap-2 ${item.tone}`}>
                       <Icon className="h-4 w-4" />
-                      <p className="terminal-heading text-cyan">{item.label}</p>
+                      <p className="terminal-heading !text-current">{item.label}</p>
                     </div>
-                    <p className="mt-2 text-sm leading-6 text-ink">{item.value}</p>
+                    <p className="mt-3 text-sm font-semibold text-ink">{item.value}</p>
+                    <p className="mt-2 text-sm leading-6 text-mute">{item.detail}</p>
                   </div>
                 );
               })}
+            </div>
+
+            <div className="my-5 terminal-rule" />
+
+            <div className="rounded-[24px] border border-white/10 bg-black/20 p-4">
+              <p className="terminal-heading">Provider mesh</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {["DexScreener", "Birdeye", "Helius / RPC", "Bubblemaps", "OpenRouter"].map((item) => (
+                  <div
+                    key={item}
+                    className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-xs uppercase tracking-[0.16em] text-mute"
+                  >
+                    {item}
+                  </div>
+                ))}
+              </div>
             </div>
           </aside>
         </div>
@@ -134,7 +185,7 @@ export function AnalysisScreen({ mode, initialMint }: AnalysisScreenProps) {
         {state.status === "idle" ? (
           <EmptyState
             title="Load a Solana mint"
-            description="The report shell is ready. Paste a mint to inspect the setup summary, why it surfaced, what can break it, scenario ranges, suggested size tier, and time horizon."
+            description="The report shell is ready. Paste a mint to inspect setup quality, scenario ranges, holder structure, and what can break the trade."
           />
         ) : null}
 

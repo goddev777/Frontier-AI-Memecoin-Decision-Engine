@@ -15,9 +15,11 @@
 - Core data providers: DexScreener, Birdeye, Helius/Solana RPC, and Bubblemaps.
 - Recommendation flow should stay deterministic first, with optional AI narrative enrichment layered on top.
 - Reports should include buy/sell/skip guidance, scenario market-cap ranges, holders, bundle context, notable wallets, and security caveats.
+- UI direction: sleek premium trench-terminal feel with stronger hierarchy, cleaner mobile ordering, and a sharper trade-ticket/report-shell presentation.
 - Implemented API route: `app/api/analysis/route.ts`.
 - Implemented backend engine: `lib/solana-analysis/` with provider fan-out, scoring, OpenRouter enrichment, and a UI adapter that maps engine output into the client report contract.
 - OpenRouter defaults to `OPENROUTER_MODEL=openrouter/free` when enabled.
+- Frontend supports `NEXT_PUBLIC_ANALYSIS_API_PATH` for custom analysis endpoints; `.env.example` and README now document it.
 
 ## Environment Constraints
 - `Node.js 24.14.0` was installed locally during this session and `npm install`, `npm run test`, and `npm run build` now complete successfully in this workspace.
@@ -25,4 +27,5 @@
 
 ## Verification State
 - Current status at end of this session: tests passing, production build passing.
+- Live local dev server still responds with HTTP 200 after the redesign pass.
 - Edge cases tightened after review: unknown security data no longer reads as renounced/safe, missing market-cap scenarios no longer render as `$0-$0`, Birdeye `success:false` envelopes now reduce coverage correctly, OpenRouter hard failures surface as failures, and bundle status no longer defaults to low risk when data is missing.

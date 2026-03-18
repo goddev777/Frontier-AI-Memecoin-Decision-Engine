@@ -41,6 +41,7 @@ SOLANA_RPC_URL=
 BUBBLEMAPS_API_KEY=
 NEXT_PUBLIC_BUBBLEMAPS_PARTNER_ID=
 NEXT_PUBLIC_APP_URL=http://localhost:3000
+NEXT_PUBLIC_ANALYSIS_API_PATH=/api/analysis
 OPENROUTER_API_KEY=
 OPENROUTER_MODEL=openrouter/free
 OPENROUTER_HTTP_REFERER=http://localhost:3000
@@ -52,6 +53,7 @@ Notes:
 - `Birdeye`, `Helius`, and `Bubblemaps` are optional but materially improve coverage.
 - `OPENROUTER_API_KEY` is optional. If omitted, the app keeps the deterministic report path only.
 - `NEXT_PUBLIC_BUBBLEMAPS_PARTNER_ID` is needed for the embedded iframe experience. Without it, the report still links out to Bubblemaps.
+- `NEXT_PUBLIC_ANALYSIS_API_PATH` only matters if you want the frontend to call a non-default analysis endpoint. The default is `/api/analysis`.
 
 ## Local Development
 
@@ -86,4 +88,4 @@ This codebase is shaped for on-demand analysis, not long-running websocket inges
 
 ## Current Constraint
 
-This machine did not have `node`, `npm`, or `git` available in PATH during the build session, so I could not run install, build, or test commands locally here. The codebase was assembled and integrated by file authoring and manual review.
+The app is designed to degrade gracefully when some providers are unavailable. Missing API keys should reduce coverage and confidence, not crash the experience.

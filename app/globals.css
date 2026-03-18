@@ -3,15 +3,15 @@
 @tailwind utilities;
 
 :root {
-  --canvas: #061017;
-  --panel: rgba(10, 19, 28, 0.88);
-  --panel-strong: rgba(5, 12, 18, 0.96);
-  --ink: #f3fbff;
-  --mute: #8aa0b3;
-  --line: rgba(143, 173, 198, 0.18);
-  --lime: #9dfc66;
-  --ember: #ff7f6c;
-  --cyan: #58e6ff;
+  --canvas: #030913;
+  --panel: rgba(9, 17, 28, 0.84);
+  --panel-strong: rgba(4, 9, 16, 0.95);
+  --ink: #f5fbff;
+  --mute: #90a6bb;
+  --line: rgba(158, 182, 203, 0.14);
+  --lime: #a6ff71;
+  --ember: #ff866d;
+  --cyan: #63e8ff;
   --gold: #ffd66b;
 }
 
@@ -21,24 +21,58 @@
 
 html {
   background:
-    radial-gradient(circle at top, rgba(88, 230, 255, 0.12), transparent 30%),
-    radial-gradient(circle at 20% 20%, rgba(157, 252, 102, 0.08), transparent 24%),
-    radial-gradient(circle at 80% 0%, rgba(255, 214, 107, 0.08), transparent 20%),
+    radial-gradient(circle at top, rgba(99, 232, 255, 0.16), transparent 32%),
+    radial-gradient(circle at 14% 18%, rgba(166, 255, 113, 0.08), transparent 24%),
+    radial-gradient(circle at 84% 0%, rgba(255, 214, 107, 0.08), transparent 22%),
+    radial-gradient(circle at 50% 120%, rgba(99, 232, 255, 0.08), transparent 35%),
     var(--canvas);
   color-scheme: dark;
+  scroll-behavior: smooth;
 }
 
 body {
+  position: relative;
   margin: 0;
   min-height: 100vh;
+  overflow-x: hidden;
   color: var(--ink);
   background:
-    linear-gradient(180deg, rgba(0, 0, 0, 0.2), transparent 30%),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px),
-    linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent 22%),
+    linear-gradient(180deg, rgba(3, 8, 14, 0), rgba(3, 8, 14, 0.72) 72%, rgba(3, 8, 14, 0.98)),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+    linear-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 1px),
     transparent;
-  background-size: auto, 72px 72px, 72px 72px, auto;
+  background-size: auto, auto, 96px 96px, 96px 96px, auto;
   font-family: var(--font-sans), "Segoe UI", sans-serif;
+}
+
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  inset: auto;
+  pointer-events: none;
+  z-index: 0;
+  filter: blur(48px);
+  opacity: 0.7;
+}
+
+body::before {
+  top: 88px;
+  left: -80px;
+  height: 280px;
+  width: 280px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(99, 232, 255, 0.18), transparent 68%);
+}
+
+body::after {
+  right: -100px;
+  bottom: 8%;
+  height: 320px;
+  width: 320px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(166, 255, 113, 0.12), transparent 68%);
 }
 
 a {
@@ -74,12 +108,14 @@ input {
     overflow: hidden;
     border: 1px solid var(--line);
     background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent 35%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.045), transparent 34%),
+      radial-gradient(circle at top left, rgba(255, 255, 255, 0.035), transparent 26%),
       var(--panel);
     box-shadow:
-      0 24px 80px rgba(0, 0, 0, 0.45),
-      inset 0 1px 0 rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(20px);
+      0 32px 120px rgba(0, 0, 0, 0.42),
+      0 8px 40px rgba(0, 0, 0, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(22px);
   }
 
   .terminal-shell::before {
@@ -91,19 +127,32 @@ input {
       linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
       linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px);
     background-size: 24px 24px;
-    mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.45), transparent 90%);
+    mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.45), transparent 88%);
+    opacity: 0.38;
+  }
+
+  .terminal-shell::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    border-radius: inherit;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.04),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.02);
   }
 
   .terminal-chip {
     border: 1px solid rgba(143, 173, 198, 0.18);
-    background: rgba(255, 255, 255, 0.035);
-    backdrop-filter: blur(12px);
+    background: rgba(255, 255, 255, 0.04);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(14px);
   }
 
   .terminal-heading {
     font-family: var(--font-mono), "SFMono-Regular", Consolas, monospace;
-    font-size: 0.72rem;
-    letter-spacing: 0.16em;
+    font-size: 0.7rem;
+    letter-spacing: 0.18em;
     text-transform: uppercase;
     color: var(--mute);
   }
@@ -111,7 +160,7 @@ input {
   .terminal-rule {
     height: 1px;
     width: 100%;
-    background: linear-gradient(90deg, rgba(88, 230, 255, 0.35), rgba(157, 252, 102, 0.1), transparent);
+    background: linear-gradient(90deg, rgba(99, 232, 255, 0.4), rgba(166, 255, 113, 0.12), transparent);
   }
 
   .terminal-number {
