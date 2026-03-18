@@ -248,7 +248,8 @@ describe("solana analysis scoring", () => {
         choices: [
           {
             message: {
-              content: "This is a strong buy and will explode from here."
+              content:
+                '{"setup":"This is a strong buy and will explode from here.","whySurfaced":"Momentum is strong.","narrative":"This is a strong buy and will explode from here.","whatCanBreak":"Liquidity can disappear quickly."}'
             }
           }
         ]
@@ -267,6 +268,7 @@ describe("solana analysis scoring", () => {
     });
 
     expect(enrichment.source.status).toBe("success");
+    expect(enrichment.aiSummary?.setup?.toLowerCase()).toContain("limited");
     expect(enrichment.narrative?.toLowerCase()).toContain("limited");
     expect(enrichment.narrative?.toLowerCase()).not.toContain("strong buy");
     expect(enrichment.narrative?.toLowerCase()).not.toContain("will explode");

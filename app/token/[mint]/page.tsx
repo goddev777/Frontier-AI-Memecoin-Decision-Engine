@@ -1,11 +1,11 @@
 import { AnalysisScreen } from "@/components/analysis-screen";
 
-export default function TokenDetailPage({
+export default async function TokenDetailPage({
   params
 }: {
-  params: { mint: string };
+  params: Promise<{ mint: string }>;
 }) {
-  const { mint } = params;
+  const { mint } = await params;
 
   return <AnalysisScreen mode="token" initialMint={mint} />;
 }

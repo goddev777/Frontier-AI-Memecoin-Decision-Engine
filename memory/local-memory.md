@@ -5,6 +5,7 @@
 - For AI features in this project, prefer OpenRouter with a free model/router when possible.
 - The user asked for multi-agent execution across planning, orchestration, building, testing, and review.
 - The user does not want secrets exposed; Helius and OpenRouter keys must remain server-only and never be moved into `NEXT_PUBLIC_` env vars.
+- The user wants OpenRouter AI to be the main differentiator, not an optional side note; AI should drive the report text when available.
 
 ## Project Essentials
 - Product: a Solana contract-address analysis webapp for memecoin/new-pair traders ("trenchers").
@@ -24,6 +25,7 @@
 - Implemented backend engine: `lib/solana-analysis/` with provider fan-out, scoring, OpenRouter enrichment, and a UI adapter that maps engine output into the client report contract.
 - OpenRouter defaults to `OPENROUTER_MODEL=openrouter/free` when enabled.
 - The current preferred OpenRouter model for local testing is `openrouter/hunter-alpha`, but the app should degrade quickly back to deterministic mode when the model is slow.
+- OpenRouter now uses a compact JSON-first prompt and should generate `setup`, `whySurfaced`, `narrative`, and `whatCanBreak` when available.
 - Frontend supports `NEXT_PUBLIC_ANALYSIS_API_PATH` for custom analysis endpoints; `.env.example` and README now document it.
 
 ## Environment Constraints
@@ -35,4 +37,5 @@
 - Live local dev server still responds with HTTP 200 after the redesign pass.
 - After wiring local credentials, a live BONK analysis request returned successfully using the fallback stack, and timeout guards were added to keep slow providers/models from hanging the route indefinitely.
 - Verified after cleanup that the live API payload no longer exposes `sources` or `bubbleMap`.
+- Direct OpenRouter calls with the compact JSON prompt succeed locally, but `hunter-alpha` still carries noticeable latency for full report generation compared with simpler prompts.
 - Edge cases tightened after review: unknown security data no longer reads as renounced/safe, missing market-cap scenarios no longer render as `$0-$0`, OpenRouter hard failures surface as failures, and concentration proxy status no longer defaults to low risk when data is missing.

@@ -324,6 +324,12 @@ export interface AnalysisReport {
   recommendation: Recommendation;
   scenarios: MarketCapScenario[];
   narrative: string;
+  aiSummary?: {
+    setup?: string;
+    whySurfaced?: string;
+    narrative?: string;
+    whatCanBreak?: string;
+  };
   warnings: AnalysisWarning[];
   sources: SourceAttribution[];
 }

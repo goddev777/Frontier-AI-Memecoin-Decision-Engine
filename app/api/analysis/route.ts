@@ -41,6 +41,9 @@ export async function GET(request: Request) {
     if (narrativeEnrichment.narrative) {
       report.narrative = narrativeEnrichment.narrative;
     }
+    if (narrativeEnrichment.aiSummary) {
+      report.aiSummary = narrativeEnrichment.aiSummary;
+    }
     report.sources = [...report.sources, narrativeEnrichment.source];
     if (narrativeEnrichment.warning) {
       report.warnings = [...report.warnings, narrativeEnrichment.warning];

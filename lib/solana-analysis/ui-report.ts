@@ -338,7 +338,7 @@ function aiEnrichment(report: EngineAnalysisReport): UiAnalysisReport["aiEnrichm
       provider: "OpenRouter",
       model,
       status: "available",
-      summary: "Free-model enrichment is layered on top of the deterministic report.",
+      summary: "OpenRouter is generating the setup, thesis, risk framing, and narrative across the report.",
       updatedAt: report.analyzedAt
     };
   }
@@ -435,10 +435,11 @@ export function toUiAnalysisReport(
       riskLevel: riskLevel(report)
     },
     summary: {
-      setup: report.recommendation.summary,
-      whySurfaced: report.recommendation.rationale.slice(0, 2).join(" "),
-      narrative: report.narrative,
+      setup: report.aiSummary?.setup || report.recommendation.summary,
+      whySurfaced: report.aiSummary?.whySurfaced || report.recommendation.rationale.slice(0, 2).join(" "),
+      narrative: report.aiSummary?.narrative || report.narrative,
       whatCanBreak: (
+        report.aiSummary?.whatCanBreak ||
         report.recommendation.caveats.join(" ") ||
         buildRisks(report)
           .slice(0, 2)
