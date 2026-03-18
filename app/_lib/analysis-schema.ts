@@ -25,12 +25,6 @@ const analysisScenarioSchema = z.object({
   summary: z.string().min(1)
 });
 
-const analysisSourceSchema = z.object({
-  label: z.string().min(1),
-  url: z.string().url(),
-  note: z.string().optional()
-});
-
 export const analysisReportSchema: z.ZodType<AnalysisReport> = z.object({
   mint: z.string().min(1),
   token: z.object({
@@ -90,14 +84,6 @@ export const analysisReportSchema: z.ZodType<AnalysisReport> = z.object({
       status: z.enum(["available", "disabled", "unavailable", "error"]).optional(),
       summary: z.string().optional(),
       updatedAt: z.string().optional()
-    })
-    .optional(),
-  sources: z.array(analysisSourceSchema),
-  bubbleMap: z
-    .object({
-      url: z.string().url().optional(),
-      caption: z.string().optional(),
-      provider: z.string().optional()
     })
     .optional(),
   updatedAt: z.string().min(1)

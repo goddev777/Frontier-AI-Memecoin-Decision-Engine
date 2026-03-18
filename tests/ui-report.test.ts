@@ -42,47 +42,45 @@ function createSnapshot(): ProviderSnapshot {
         }
       ]
     },
-    birdeye: {
-      overview: {
-        address: "So11111111111111111111111111111111111111112",
-        symbol: "TEST",
-        name: "Test Token",
+    helius: {
+      token_info: {
         decimals: 9,
         supply: 10_000_000,
-        circulatingSupply: 8_000_000,
-        price: 0.5,
-        liquidity: 700_000,
-        mc: 5_000_000,
-        fdv: 6_200_000
+        circulating_supply: 8_000_000,
+        mint_authority: null,
+        freeze_authority: null
       },
-      security: {
-        top10HolderBalancePercentage: 28,
-        mutableMetadata: false,
-        mintable: false,
-        freezable: false
-      },
-      holders: {
-        total: 7_200,
-        items: [
-          {
-            owner: "Holder111111111111111111111111111111111111111",
-            balance: 800_000,
-            percentage: 8
-          }
-        ]
+      content: {
+        metadata: {
+          symbol: "TEST",
+          name: "Test Token"
+        }
       }
     },
-    bubblemaps: {
-      explorerUrl: "https://app.bubblemaps.io/sol/token/So11111111111111111111111111111111111111112",
-      embedUrl:
-        "https://iframe.bubblemaps.io/map?address=So11111111111111111111111111111111111111112&chain=solana&partnerId=test",
-      apiData: {
-        clusters: [{ id: "cluster-1", share: 0.12 }]
-      }
+    rpc: {
+      supply: {
+        amount: "10000000000000000",
+        decimals: 9,
+        uiAmount: 10_000_000,
+        uiAmountString: "10000000"
+      },
+      mint: {
+        decimals: 9,
+        mintAuthority: null,
+        freezeAuthority: null
+      },
+      largestAccounts: [
+        {
+          address: "Large111111111111111111111111111111111111111",
+          amount: "800000000000000",
+          uiAmount: 800_000,
+          uiAmountString: "800000"
+        }
+      ]
     },
     sources: [
       { provider: "dexscreener", status: "success", fields: ["pairs"] },
-      { provider: "birdeye", status: "success", fields: ["overview"] },
+      { provider: "helius", status: "success", fields: ["asset"] },
       { provider: "openrouter", status: "success", fields: ["narrative"], note: "Model: openrouter/free" }
     ],
     warnings: []
@@ -90,12 +88,9 @@ function createSnapshot(): ProviderSnapshot {
 }
 
 describe("toUiAnalysisReport", () => {
-  it("maps the engine report into the UI contract with AI and bubble map metadata", () => {
+  it("maps the engine report into the UI contract with AI metadata and no sources section", () => {
     const snapshot = createSnapshot();
-    const engineReport = buildAnalysisReport(
-      "So11111111111111111111111111111111111111112",
-      snapshot
-    );
+    const engineReport = buildAnalysisReport("So11111111111111111111111111111111111111112", snapshot);
     engineReport.narrative = "Deterministic narrative.";
 
     const uiReport = toUiAnalysisReport(engineReport, snapshot);
@@ -104,20 +99,17 @@ describe("toUiAnalysisReport", () => {
     expect(uiReport.score.recommendation).toBe("BUY");
     expect(uiReport.aiEnrichment?.enabled).toBe(true);
     expect(uiReport.aiEnrichment?.model).toBe("openrouter/free");
-    expect(uiReport.bubbleMap?.url).toContain("iframe.bubblemaps.io");
-    expect(uiReport.sources[0]?.label).toBe("DexScreener");
+    expect("sources" in uiReport).toBe(false);
+    expect("bundleCount" in uiReport.bundles).toBe(true);
     expect(uiReport.facts.length).toBeGreaterThan(3);
     expect(uiReport.signals.length).toBeGreaterThan(3);
   });
 
-  it("does not invent scenario prices or bundle safety when market data is unavailable", () => {
-    const uiReport = toUiAnalysisReport(
-      createInvalidAddressReport("not-a-valid-address"),
-      {
-        sources: [],
-        warnings: []
-      }
-    );
+  it("does not invent scenario prices or concentration safety when market data is unavailable", () => {
+    const uiReport = toUiAnalysisReport(createInvalidAddressReport("not-a-valid-address"), {
+      sources: [],
+      warnings: []
+    });
 
     expect(uiReport.scenarios[0]?.marketCapLowUsd).toBeNull();
     expect(uiReport.scenarios[0]?.marketCapHighUsd).toBeNull();
@@ -126,7 +118,7 @@ describe("toUiAnalysisReport", () => {
     expect(uiReport.security.freezeAuthority).toBe("Unknown");
   });
 
-  it("surfaces RPC fallback messaging when holder totals and bubble clusters are unavailable", () => {
+  it("surfaces RPC fallback messaging when holder totals are unavailable", () => {
     const engineReport = buildAnalysisReport("So11111111111111111111111111111111111111112", {
       dexScreener: {
         pairs: createSnapshot().dexScreener?.pairs
@@ -192,6 +184,6 @@ describe("toUiAnalysisReport", () => {
 
     expect(uiReport.facts.find((fact) => fact.label === "Holders")?.value).toContain("sampled");
     expect(uiReport.holders.commentary).toContain("RPC holder sampling is active");
-    expect(uiReport.bundles.commentary).toContain("RPC largest-account concentration");
+    expect(uiReport.bundles.commentary).toContain("Helius and RPC concentration samples");
   });
 });

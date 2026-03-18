@@ -7,7 +7,7 @@ The app takes any Solana mint, fans out across market/on-chain/security provider
 - setup summary
 - facts / signals / scenarios
 - holder concentration and notable wallet context
-- bundle / bubble-map context
+- concentration proxy and security context
 - security warnings
 - buy / watch / avoid style guidance
 - scenario market-cap ranges
@@ -23,9 +23,7 @@ The app takes any Solana mint, fans out across market/on-chain/security provider
 ## Provider Strategy
 
 - `DexScreener`: public pair, liquidity, volume, and price context
-- `Birdeye`: token overview, holders, top traders, security
 - `Helius` / `Solana RPC`: metadata and fallback token account information
-- `Bubblemaps`: cluster enrichment and iframe/explorer links
 - `OpenRouter`: optional AI narrative enrichment, defaulting to `openrouter/free`
 
 The report is intentionally designed to degrade gracefully. Missing API keys should produce partial data and cautious copy, not hard crashes.
@@ -35,11 +33,8 @@ The report is intentionally designed to degrade gracefully. Missing API keys sho
 Copy `.env.example` and fill what you want to enable:
 
 ```bash
-BIRDEYE_API_KEY=
 HELIUS_API_KEY=
 SOLANA_RPC_URL=
-BUBBLEMAPS_API_KEY=
-NEXT_PUBLIC_BUBBLEMAPS_PARTNER_ID=
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 NEXT_PUBLIC_ANALYSIS_API_PATH=/api/analysis
 OPENROUTER_API_KEY=
@@ -50,10 +45,10 @@ OPENROUTER_APP_TITLE=CA Suggestions
 
 Notes:
 
-- `Birdeye`, `Helius`, and `Bubblemaps` are optional but materially improve coverage.
+- `HELIUS_API_KEY` and `SOLANA_RPC_URL` are the main on-chain enrichment inputs for this build.
 - `OPENROUTER_API_KEY` is optional. If omitted, the app keeps the deterministic report path only.
-- `NEXT_PUBLIC_BUBBLEMAPS_PARTNER_ID` is needed for the embedded iframe experience. Without it, the report still links out to Bubblemaps.
 - `NEXT_PUBLIC_ANALYSIS_API_PATH` only matters if you want the frontend to call a non-default analysis endpoint. The default is `/api/analysis`.
+- Keep secret keys in server-side env vars only. Do not use `NEXT_PUBLIC_` for Helius or OpenRouter secrets.
 
 ## Local Development
 

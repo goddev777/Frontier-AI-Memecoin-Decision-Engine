@@ -24,12 +24,6 @@ export interface AnalysisScenario {
   summary: string;
 }
 
-export interface AnalysisSource {
-  label: string;
-  url: string;
-  note?: string;
-}
-
 export interface AnalysisAiEnrichment {
   available: boolean;
   enabled: boolean;
@@ -89,12 +83,6 @@ export interface AnalysisReport {
     freezeAuthority: string;
     lpStatus: string;
     commentary: string;
-  };
-  sources: AnalysisSource[];
-  bubbleMap?: {
-    url?: string;
-    caption?: string;
-    provider?: string;
   };
   aiEnrichment?: AnalysisAiEnrichment;
   updatedAt: string;

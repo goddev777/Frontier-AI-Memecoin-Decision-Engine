@@ -1,9 +1,7 @@
 export type ProviderName =
   | "dexscreener"
-  | "birdeye"
   | "helius"
   | "solana-rpc"
-  | "bubblemaps"
   | "openrouter";
 
 export type SourceStatus = "success" | "partial" | "skipped" | "error";
@@ -82,66 +80,6 @@ export interface DexScreenerPair {
 export interface DexScreenerPairsResponse {
   schemaVersion?: string;
   pairs?: DexScreenerPair[];
-}
-
-export interface BirdeyeEnvelope<T> {
-  success?: boolean;
-  data?: T;
-  message?: string;
-}
-
-export interface BirdeyeTokenOverview {
-  address?: string;
-  symbol?: string;
-  name?: string;
-  decimals?: number;
-  supply?: number;
-  circulatingSupply?: number;
-  price?: number;
-  price24hChangePercent?: number;
-  liquidity?: number;
-  mc?: number;
-  fdv?: number;
-  logoURI?: string;
-}
-
-export interface BirdeyeTokenSecurity {
-  ownerBalancePercentage?: number;
-  creatorBalancePercentage?: number;
-  top10HolderBalancePercentage?: number;
-  top10UserBalancePercentage?: number;
-  mutableMetadata?: boolean;
-  mintable?: boolean;
-  freezable?: boolean;
-  transferFeeEnable?: boolean;
-  creatorAddress?: string;
-}
-
-export interface BirdeyeTokenHolder {
-  owner?: string;
-  address?: string;
-  balance?: number;
-  uiAmount?: number;
-  percentage?: number;
-}
-
-export interface BirdeyeHolderListData {
-  items?: BirdeyeTokenHolder[];
-  total?: number;
-}
-
-export interface BirdeyeTopTrader {
-  owner?: string;
-  volume?: number;
-  buyVolume?: number;
-  sellVolume?: number;
-  pnl?: number;
-  txCount?: number;
-}
-
-export interface BirdeyeTopTraderListData {
-  items?: BirdeyeTopTrader[];
-  total?: number;
 }
 
 export interface HeliusErrorPayload {
@@ -231,26 +169,6 @@ export interface SolanaRpcLargestAccount {
   uiAmountString?: string;
 }
 
-export interface BubblemapsApiResponse {
-  decentralization_score?: number;
-  clusters?: Array<{
-    id?: string;
-    size?: number;
-    share?: number;
-    holder_count?: number;
-  }>;
-  holders?: Array<{
-    address?: string;
-    percentage?: number;
-  }>;
-}
-
-export interface BubblemapsArtifacts {
-  explorerUrl: string;
-  embedUrl?: string;
-  apiData?: BubblemapsApiResponse;
-}
-
 export interface OpenRouterChatMessage {
   role: "system" | "user" | "assistant";
   content: string;
@@ -271,17 +189,12 @@ export interface OpenRouterChatCompletionResponse {
 }
 
 export interface ProviderConfig {
-  birdeyeApiKey?: string;
   heliusApiKey?: string;
   solanaRpcUrl?: string;
-  bubblemapsApiKey?: string;
-  bubblemapsIframePartnerId?: string;
   openRouterApiKey?: string;
   openRouterModel?: string;
   dexScreenerBaseUrl?: string;
-  birdeyeBaseUrl?: string;
   heliusRpcBaseUrl?: string;
-  bubblemapsBaseUrl?: string;
   openRouterBaseUrl?: string;
   openRouterReferer?: string;
   openRouterTitle?: string;
@@ -294,19 +207,12 @@ export interface ProviderOptions {
 
 export interface ProviderSnapshot {
   dexScreener?: DexScreenerPairsResponse;
-  birdeye?: {
-    overview?: BirdeyeTokenOverview;
-    security?: BirdeyeTokenSecurity;
-    holders?: BirdeyeHolderListData;
-    topTraders?: BirdeyeTopTraderListData;
-  };
   helius?: HeliusAsset;
   rpc?: {
     supply?: SolanaRpcTokenSupplyValue;
     mint?: SolanaRpcMintInfo;
     largestAccounts?: SolanaRpcLargestAccount[];
   };
-  bubblemaps?: BubblemapsArtifacts;
   sources: SourceAttribution[];
   warnings: AnalysisWarning[];
 }

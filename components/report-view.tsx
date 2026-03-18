@@ -4,7 +4,6 @@ import {
   Bot,
   CircleAlert,
   Clock3,
-  ExternalLink,
   Radar,
   Shield,
   Sparkles,
@@ -471,16 +470,16 @@ export function ReportView({ report }: { report: AnalysisReport }) {
 
               <div className="mt-5 grid gap-3 sm:grid-cols-3">
                 <div className="rounded-[20px] border border-white/10 bg-white/[0.05] p-3">
-                  <p className="terminal-heading">Sources</p>
-                  <p className="mt-2 terminal-number text-lg text-ink">{report.sources.length}</p>
+                  <p className="terminal-heading">Risk level</p>
+                  <p className="mt-2 text-sm font-semibold text-ink">{report.score.riskLevel.toUpperCase()}</p>
                 </div>
                 <div className="rounded-[20px] border border-white/10 bg-white/[0.05] p-3">
-                  <p className="terminal-heading">Bundles</p>
+                  <p className="terminal-heading">Concentration</p>
                   <p className="mt-2 text-sm font-semibold text-ink">{report.bundles.status}</p>
                 </div>
                 <div className="rounded-[20px] border border-white/10 bg-white/[0.05] p-3">
-                  <p className="terminal-heading">Bubble map</p>
-                  <p className="mt-2 text-sm font-semibold text-ink">{report.bubbleMap?.url ? "Embedded" : "Unavailable"}</p>
+                  <p className="terminal-heading">AI mode</p>
+                  <p className="mt-2 text-sm font-semibold text-ink">{aiStatus.title}</p>
                 </div>
               </div>
             </div>
@@ -555,13 +554,13 @@ export function ReportView({ report }: { report: AnalysisReport }) {
         </Panel>
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-[1.05fr,0.95fr]">
-        <Panel title="Bundle + security" subtitle="Execution friction, mint controls, and LP posture in one place.">
+      <div className="grid gap-4">
+        <Panel title="Concentration + Security" subtitle="Execution friction, concentration proxy risk, and mint controls in one place.">
           <div className="space-y-3">
             <div className="rounded-[26px] border border-white/10 bg-white/[0.05] p-4">
               <div className="flex items-center gap-2 text-cyan">
                 <Waypoints className="h-4 w-4" />
-                <p className="terminal-heading !text-current">Bundle status</p>
+                <p className="terminal-heading !text-current">Concentration proxy</p>
               </div>
               <p className="mt-3 text-lg font-semibold text-ink">
                 {report.bundles.status}
@@ -597,66 +596,7 @@ export function ReportView({ report }: { report: AnalysisReport }) {
             </div>
           </div>
         </Panel>
-
-        <Panel title="Bubble map" subtitle="Ownership graph embeds when the provider supplies an iframe URL.">
-          {report.bubbleMap?.url ? (
-            <div className="overflow-hidden rounded-[28px] border border-white/10 bg-black/30">
-              <iframe
-                title={`Bubble map for ${report.token.symbol}`}
-                src={report.bubbleMap.url}
-                loading="lazy"
-                className="h-[360px] w-full"
-                referrerPolicy="no-referrer"
-              />
-            </div>
-          ) : (
-            <div className="rounded-[28px] border border-dashed border-white/10 bg-black/20 p-6 text-sm leading-6 text-mute">
-              Bubble map iframe not supplied for this report yet.
-            </div>
-          )}
-
-          {report.bubbleMap?.caption ? <p className="mt-3 text-sm leading-6 text-mute">{report.bubbleMap.caption}</p> : null}
-        </Panel>
       </div>
-
-      <Panel
-        title="Sources"
-        subtitle="Direct links behind the report, useful for double-checking before entries and trims."
-        action={
-          <div className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-xs uppercase tracking-[0.18em] text-mute">
-            {report.sources.length} linked source{report.sources.length === 1 ? "" : "s"}
-          </div>
-        }
-      >
-        {report.sources.length ? (
-          <div className="grid gap-3 lg:grid-cols-2">
-            {report.sources.map((source) => (
-              <a
-                key={source.url}
-                href={source.url}
-                target="_blank"
-                rel="noreferrer"
-                className="group rounded-[24px] border border-white/10 bg-white/[0.05] p-4 transition hover:border-cyan/35 hover:bg-white/[0.07]"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-sm font-semibold text-ink">{source.label}</p>
-                    {source.note ? <p className="mt-2 text-sm leading-6 text-mute">{source.note}</p> : null}
-                  </div>
-                  <div className="mt-0.5 inline-flex items-center gap-1 text-sm text-cyan">
-                    Open
-                    <ExternalLink className="h-4 w-4 transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                  </div>
-                </div>
-              </a>
-            ))}
-          </div>
-        ) : (
-          <div className="rounded-[28px] border border-dashed border-white/10 bg-black/20 p-6 text-sm leading-6 text-mute">
-            No source links are available for this response yet.
-          </div>
-        )}
-      </Panel>
     </div>
   );
 }

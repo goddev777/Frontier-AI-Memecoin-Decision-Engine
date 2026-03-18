@@ -1,12 +1,6 @@
-import type { AnalysisReport as UiAnalysisReport, AnalysisFact, AnalysisRisk, AnalysisScenario, AnalysisSource } from "@/lib/types";
+import type { AnalysisReport as UiAnalysisReport, AnalysisFact, AnalysisRisk, AnalysisScenario } from "@/lib/types";
 
-import type {
-  AnalysisMetricScore,
-  AnalysisReport as EngineAnalysisReport,
-  AnalysisWarning,
-  ProviderSnapshot,
-  SourceAttribution
-} from "./types";
+import type { AnalysisMetricScore, AnalysisReport as EngineAnalysisReport, ProviderSnapshot } from "./types";
 
 function round(value: number, digits = 2) {
   const factor = 10 ** digits;
@@ -235,55 +229,6 @@ function buildSignals(report: EngineAnalysisReport): AnalysisFact[] {
   ];
 }
 
-function sourceLabel(provider: SourceAttribution["provider"]) {
-  switch (provider) {
-    case "dexscreener":
-      return "DexScreener";
-    case "birdeye":
-      return "Birdeye";
-    case "helius":
-      return "Helius";
-    case "solana-rpc":
-      return "Solana RPC";
-    case "bubblemaps":
-      return "Bubblemaps";
-    case "openrouter":
-      return "OpenRouter";
-    default:
-      return provider;
-  }
-}
-
-function sourceUrl(source: SourceAttribution, report: EngineAnalysisReport, snapshot: ProviderSnapshot) {
-  if (source.provider === "dexscreener") {
-    return report.market.selectedPair?.url || source.url || "https://docs.dexscreener.com/api/reference";
-  }
-  if (source.provider === "bubblemaps") {
-    return snapshot.bubblemaps?.explorerUrl || source.url || "https://docs.bubblemaps.io";
-  }
-  if (source.provider === "helius") {
-    return source.url || "https://www.helius.dev/docs/das-api";
-  }
-  if (source.provider === "birdeye") {
-    return source.url || "https://docs.birdeye.so";
-  }
-  if (source.provider === "openrouter") {
-    return "https://openrouter.ai/docs/";
-  }
-  return source.url || "https://solana.com/docs/rpc";
-}
-
-function buildSources(report: EngineAnalysisReport, snapshot: ProviderSnapshot): AnalysisSource[] {
-  return report.sources.map((source) => ({
-    label: sourceLabel(source.provider),
-    url: sourceUrl(source, report, snapshot),
-    note:
-      source.status === "success"
-        ? source.note || "Used in the final report."
-        : source.note || `Status: ${source.status}.`
-  }));
-}
-
 function buildRisks(report: EngineAnalysisReport): AnalysisRisk[] {
   const mappedWarnings = report.warnings.map((warning) => ({
     title: warning.code.replaceAll("_", " "),
@@ -340,28 +285,25 @@ function buildScenarios(report: EngineAnalysisReport): AnalysisScenario[] {
   });
 }
 
-function bundleStatus(report: EngineAnalysisReport, snapshot: ProviderSnapshot) {
-  const clusterCount = snapshot.bubblemaps?.apiData?.clusters?.length;
+function bundleStatus(report: EngineAnalysisReport) {
   const top10 = report.distribution.top10HolderPct ?? 0;
   const largestHolder = report.distribution.largestHolderPct ?? 0;
-  const usingProxy = clusterCount === undefined;
 
   if (
     !report.isValid ||
-    (clusterCount === undefined &&
-      report.distribution.top10HolderPct === undefined &&
+    (report.distribution.top10HolderPct === undefined &&
       report.distribution.largestHolderPct === undefined)
   ) {
     return "Bundle data unavailable";
   }
 
-  if ((clusterCount ?? 0) >= 6 || top10 >= 55 || largestHolder >= 18) {
-    return usingProxy ? "High concentration proxy risk" : "High cluster / bundle risk";
+  if (top10 >= 55 || largestHolder >= 18) {
+    return "High concentration proxy risk";
   }
-  if ((clusterCount ?? 0) >= 3 || top10 >= 35 || largestHolder >= 10) {
-    return usingProxy ? "Medium concentration proxy risk" : "Medium bundle risk";
+  if (top10 >= 35 || largestHolder >= 10) {
+    return "Medium concentration proxy risk";
   }
-  return usingProxy ? "Low concentration proxy risk" : "Low bundle risk";
+  return "Low concentration proxy risk";
 }
 
 function lpStatus(report: EngineAnalysisReport) {
@@ -441,7 +383,6 @@ export function toUiAnalysisReport(
   snapshot: ProviderSnapshot
 ): UiAnalysisReport {
   const recommendation = recommendationLabel(report.recommendation.label);
-  const clusterCount = snapshot.bubblemaps?.apiData?.clusters?.length ?? null;
   const notableWalletSummary = report.distribution.notableWallets.length
     ? report.distribution.notableWallets
         .slice(0, 3)
@@ -460,10 +401,9 @@ export function toUiAnalysisReport(
     report.distribution.holderCount === undefined && report.distribution.sampledHolderCount !== undefined
       ? `${notableWalletSummary} RPC holder sampling is active, but total holder count is still unknown without a fuller indexer.`
       : notableWalletSummary;
-  const bundleCommentary = clusterCount
-    ? `${clusterCount} holder clusters were surfaced by Bubblemaps.`
-    : report.distribution.top10HolderPct !== undefined || report.distribution.largestHolderPct !== undefined
-      ? "Bubblemaps API is unavailable, so bundle risk is estimated from RPC largest-account concentration instead of true cluster mapping."
+  const bundleCommentary =
+    report.distribution.top10HolderPct !== undefined || report.distribution.largestHolderPct !== undefined
+      ? "Cluster mapping is disabled, so bundle risk is estimated from Helius and RPC concentration samples."
       : "No direct bundle or concentration sample was available.";
 
   return {
@@ -518,28 +458,20 @@ export function toUiAnalysisReport(
       commentary: holderCommentary
     },
     bundles: {
-      status: bundleStatus(report, snapshot),
-      bundleCount: clusterCount,
+      status: bundleStatus(report),
+      bundleCount: null,
       commentary: bundleCommentary
     },
     security: {
       mintAuthority:
-        report.security.mintable === undefined ? "Unknown" : report.security.mintable ? "Active" : "Inactive / renounced",
+        report.security.mintable === undefined ? "Unknown" : report.security.mintable ? "Active" : "No active mint authority seen",
       freezeAuthority:
-        report.security.freezable === undefined ? "Unknown" : report.security.freezable ? "Active" : "Inactive / renounced",
+        report.security.freezable === undefined ? "Unknown" : report.security.freezable ? "Active" : "No active freeze authority seen",
       lpStatus:
         report.market.liquidityUsd === undefined ? "Unknown / incomplete" : lpStatus(report),
       commentary: report.scores.trust.explanation
     },
     aiEnrichment: aiEnrichment(report),
-    sources: buildSources(report, snapshot),
-    bubbleMap: {
-      url: snapshot.bubblemaps?.embedUrl,
-      caption: snapshot.bubblemaps?.embedUrl
-        ? "Bubblemap iframe is live when partner access is configured; otherwise use the linked source for the external map."
-        : "Bubblemap external view is available through the Bubblemaps source link.",
-      provider: "Bubblemaps"
-    },
     updatedAt: report.analyzedAt
   };
 }

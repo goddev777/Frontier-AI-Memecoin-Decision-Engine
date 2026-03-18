@@ -76,44 +76,31 @@ function deriveSelectedPair(
 
 function deriveIdentity(address: string, snapshot: ProviderSnapshot): TokenIdentity {
   const pair = selectBestDexPair(snapshot.dexScreener?.pairs, address);
-  const overview = snapshot.birdeye?.overview;
   const asset = snapshot.helius;
 
   return {
     address,
     symbol:
-      overview?.symbol ??
-      pair?.baseToken?.symbol ??
-      asset?.content?.metadata?.symbol ??
-      shortenAddress(address),
+      pair?.baseToken?.symbol ?? asset?.content?.metadata?.symbol ?? shortenAddress(address),
     name:
-      overview?.name ??
-      pair?.baseToken?.name ??
-      asset?.content?.metadata?.name ??
-      "Unknown token",
-    decimals:
-      overview?.decimals ??
-      snapshot.rpc?.mint?.decimals ??
-      snapshot.helius?.token_info?.decimals,
-    logoUrl: overview?.logoURI ?? asset?.content?.links?.image,
+      pair?.baseToken?.name ?? asset?.content?.metadata?.name ?? "Unknown token",
+    decimals: snapshot.rpc?.mint?.decimals ?? snapshot.helius?.token_info?.decimals,
+    logoUrl: asset?.content?.links?.image,
     description: asset?.content?.metadata?.description,
   };
 }
 
 function deriveMarket(address: string, snapshot: ProviderSnapshot): TokenMarketData {
   const pair = selectBestDexPair(snapshot.dexScreener?.pairs, address);
-  const overview = snapshot.birdeye?.overview;
 
   return {
     priceUsd:
-      toNumber(pair?.priceUsd) ??
-      overview?.price ??
-      snapshot.helius?.token_info?.price_info?.price_per_token,
-    marketCapUsd: pair?.marketCap ?? overview?.mc,
-    fullyDilutedValuationUsd: pair?.fdv ?? overview?.fdv,
-    liquidityUsd: pair?.liquidity?.usd ?? overview?.liquidity,
+      toNumber(pair?.priceUsd) ?? snapshot.helius?.token_info?.price_info?.price_per_token,
+    marketCapUsd: pair?.marketCap,
+    fullyDilutedValuationUsd: pair?.fdv,
+    liquidityUsd: pair?.liquidity?.usd,
     volume24hUsd: pair?.volume?.h24,
-    priceChange24hPct: pair?.priceChange?.h24 ?? overview?.price24hChangePercent,
+    priceChange24hPct: pair?.priceChange?.h24,
     buys24h: pair?.txns?.h24?.buys,
     sells24h: pair?.txns?.h24?.sells,
     selectedPair: deriveSelectedPair(address, snapshot),
@@ -121,38 +108,33 @@ function deriveMarket(address: string, snapshot: ProviderSnapshot): TokenMarketD
 }
 
 function deriveSecurity(snapshot: ProviderSnapshot): TokenSecurityData {
-  const security = snapshot.birdeye?.security;
   const helius = snapshot.helius?.token_info;
   const heliusAuthorities = snapshot.helius?.authorities ?? [];
   const rpcMint = snapshot.rpc?.mint;
   const mintAuthority = helius?.mint_authority ?? rpcMint?.mintAuthority;
   const freezeAuthority = helius?.freeze_authority ?? rpcMint?.freezeAuthority;
   const mintable =
-    security?.mintable !== undefined
-      ? security.mintable
-      : mintAuthority !== undefined
-        ? Boolean(mintAuthority)
-        : undefined;
+    mintAuthority !== undefined
+      ? Boolean(mintAuthority)
+      : undefined;
   const freezable =
-    security?.freezable !== undefined
-      ? security.freezable
-      : freezeAuthority !== undefined
-        ? Boolean(freezeAuthority)
-        : undefined;
+    freezeAuthority !== undefined
+      ? Boolean(freezeAuthority)
+      : undefined;
 
   return {
-    mutableMetadata: security?.mutableMetadata,
+    mutableMetadata: undefined,
     mintable,
     freezable,
-    transferFeeEnabled: security?.transferFeeEnable,
+    transferFeeEnabled: undefined,
     mintAuthority: mintAuthority ?? null,
     freezeAuthority: freezeAuthority ?? null,
     creatorAddress:
-      security?.creatorAddress ??
       heliusAuthorities.find((authority) => authority.address)?.address ??
       snapshot.helius?.ownership?.owner,
     verified:
-      security?.mutableMetadata === false &&
+      mintAuthority === null &&
+      freezeAuthority === null &&
       mintable === false &&
       freezable === false,
   };
@@ -162,11 +144,6 @@ function deriveLargestHolderPct(
   snapshot: ProviderSnapshot,
   totalSupply?: number,
 ): number | undefined {
-  const holder = snapshot.birdeye?.holders?.items?.[0];
-  if (holder?.percentage !== undefined) {
-    return holder.percentage;
-  }
-
   const largestAccount = snapshot.rpc?.largestAccounts?.[0];
   if (!largestAccount || !totalSupply) {
     return undefined;
@@ -187,21 +164,6 @@ function deriveTop10HolderPct(
   snapshot: ProviderSnapshot,
   totalSupply?: number,
 ): number | undefined {
-  const securityPct =
-    snapshot.birdeye?.security?.top10HolderBalancePercentage ??
-    snapshot.birdeye?.security?.top10UserBalancePercentage;
-  if (securityPct !== undefined) {
-    return securityPct;
-  }
-
-  const holders = snapshot.birdeye?.holders?.items;
-  if (holders?.length) {
-    const listedPct = holders
-      .slice(0, 10)
-      .reduce((sum, holder) => sum + (holder.percentage ?? 0), 0);
-    return round(listedPct, 3);
-  }
-
   if (!snapshot.rpc?.largestAccounts?.length || !totalSupply) {
     return undefined;
   }
@@ -221,70 +183,26 @@ function deriveTop10HolderPct(
 function summarizeHolders(snapshot: ProviderSnapshot, totalSupply?: number): NotableWallet[] {
   const wallets: NotableWallet[] = [];
 
-  for (const holder of snapshot.birdeye?.holders?.items ?? []) {
-    const address = holder.owner ?? holder.address;
-    if (!address) {
-      continue;
-    }
-
+  for (const account of snapshot.rpc?.largestAccounts?.slice(0, 5) ?? []) {
+    const balance =
+      account.uiAmount ??
+      toNumber(account.uiAmountString) ??
+      toNumber(account.amount);
     const sharePct =
-      holder.percentage ??
-      (holder.balance !== undefined && totalSupply
-        ? round((holder.balance / totalSupply) * 100, 3)
-        : undefined);
-
+      balance !== undefined && totalSupply
+        ? round((balance / totalSupply) * 100, 3)
+        : undefined;
     wallets.push({
-      address,
-      label: `Top holder ${wallets.length + 1}`,
-      balance: holder.balance ?? holder.uiAmount,
+      address: account.address,
+      label: `Large token account ${wallets.length + 1}`,
+      balance,
       sharePct,
       activity: "holder",
       summary:
         sharePct !== undefined
-          ? `controls about ${round(sharePct, 2)}% of visible supply`
-          : "is among the largest visible holders",
+          ? `shows roughly ${round(sharePct, 2)}% of reported supply in the RPC largest-account sample`
+          : "shows up in the largest-account RPC sample",
     });
-  }
-
-  if (!wallets.length) {
-    for (const account of snapshot.rpc?.largestAccounts?.slice(0, 5) ?? []) {
-      const balance =
-        account.uiAmount ??
-        toNumber(account.uiAmountString) ??
-        toNumber(account.amount);
-      const sharePct =
-        balance !== undefined && totalSupply
-          ? round((balance / totalSupply) * 100, 3)
-          : undefined;
-      wallets.push({
-        address: account.address,
-        label: `Large token account ${wallets.length + 1}`,
-        balance,
-        sharePct,
-        activity: "holder",
-        summary:
-          sharePct !== undefined
-            ? `shows roughly ${round(sharePct, 2)}% of reported supply in the RPC largest-account sample`
-            : "shows up in the largest-account RPC sample",
-      });
-    }
-  }
-
-  for (const trader of snapshot.birdeye?.topTraders?.items ?? []) {
-    if (!trader.owner) {
-      continue;
-    }
-
-    wallets.push({
-      address: trader.owner,
-      label: `Active trader ${wallets.length + 1}`,
-      balance: trader.volume,
-      activity: "trader",
-      summary:
-        trader.volume !== undefined
-          ? `moved about $${Math.round(trader.volume).toLocaleString()} over the sampled period`
-          : "appears in the top-trader sample",
-      });
   }
 
   const authorityAddresses = new Map<string, string>();
@@ -336,20 +254,16 @@ function summarizeHolders(snapshot: ProviderSnapshot, totalSupply?: number): Not
 
 function deriveDistribution(snapshot: ProviderSnapshot): TokenDistributionData {
   const totalSupply =
-    snapshot.birdeye?.overview?.supply ??
-    snapshot.birdeye?.overview?.circulatingSupply ??
     snapshot.rpc?.supply?.uiAmount ??
     toNumber(snapshot.rpc?.supply?.uiAmountString) ??
     snapshot.helius?.token_info?.supply;
   const circulatingSupply =
-    snapshot.birdeye?.overview?.circulatingSupply ??
-    snapshot.helius?.token_info?.circulating_supply ??
-    totalSupply;
+    snapshot.helius?.token_info?.circulating_supply ?? totalSupply;
 
   return {
     totalSupply,
     circulatingSupply,
-    holderCount: snapshot.birdeye?.holders?.total,
+    holderCount: undefined,
     sampledHolderCount: snapshot.rpc?.largestAccounts?.length,
     top10HolderPct: deriveTop10HolderPct(snapshot, totalSupply),
     largestHolderPct: deriveLargestHolderPct(snapshot, totalSupply),
