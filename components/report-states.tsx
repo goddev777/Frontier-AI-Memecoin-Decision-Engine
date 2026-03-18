@@ -27,15 +27,15 @@ export function LoadingState() {
             <LoaderCircle className="h-5 w-5 animate-spin" />
           </div>
           <div>
-            <p className="terminal-heading !text-cyan">Syncing report feed</p>
+            <p className="terminal-heading !text-cyan">Booting AI decision stack</p>
             <p className="mt-2 text-sm leading-6 text-mute">
-              Pulling market, holder, security, and narrative layers into the report shell.
+              Pulling market, holder, security, and narrative context into the AI report shell.
             </p>
           </div>
         </div>
 
         <div className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-xs uppercase tracking-[0.18em] text-mute">
-          Live analysis
+          Live AI analysis
         </div>
       </div>
 
@@ -77,10 +77,10 @@ export function ErrorState({ message, onRetry }: ErrorStateProps) {
           <AlertTriangle className="h-5 w-5" />
         </div>
         <div className="space-y-2">
-          <p className="terminal-heading !text-ember">Feed exception</p>
-          <h2 className="text-2xl font-semibold tracking-[-0.03em] text-ink">The report terminal could not finish the request.</h2>
+          <p className="terminal-heading !text-ember">AI pipeline exception</p>
+          <h2 className="text-2xl font-semibold tracking-[-0.03em] text-ink">The memecoin decision engine could not finish this request.</h2>
           <p className="max-w-2xl text-sm leading-6 text-mute">
-            {message || "Check the analysis API response for this mint, then retry the lookup from the terminal."}
+            {message || "Check the analysis API response for this mint, then retry the lookup from the AI terminal."}
           </p>
         </div>
       </div>
@@ -93,7 +93,7 @@ export function ErrorState({ message, onRetry }: ErrorStateProps) {
             className="inline-flex items-center justify-center gap-2 rounded-[20px] border border-white/10 bg-white/[0.05] px-4 py-3 text-sm font-medium text-ink transition hover:border-cyan/35 hover:text-cyan"
           >
             <RefreshCcw className="h-4 w-4" />
-            Retry request
+            Retry analysis
           </button>
         ) : null}
 
@@ -101,7 +101,7 @@ export function ErrorState({ message, onRetry }: ErrorStateProps) {
           href="/"
           className="inline-flex items-center justify-center rounded-[20px] border border-white/10 bg-black/20 px-4 py-3 text-sm font-medium text-mute transition hover:border-white/20 hover:text-ink"
         >
-          Back to search
+          Back to terminal
         </a>
       </div>
     </div>
@@ -124,7 +124,7 @@ export function EmptyState({ title = "No report loaded", description }: EmptySta
         </div>
 
         <div className="rounded-full border border-lime/20 bg-lime/[0.08] px-3 py-1 text-xs uppercase tracking-[0.18em] text-lime">
-          Quick start
+          AI quick start
         </div>
       </div>
 

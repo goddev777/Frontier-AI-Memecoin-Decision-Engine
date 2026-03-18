@@ -83,28 +83,28 @@ export function AnalysisScreen({ mode, initialMint }: AnalysisScreenProps) {
     {
       label: "Scan",
       value: "Any Solana mint",
-      detail: "Paste, route, and normalize fast.",
+      detail: "Paste once and push the AI decision stack into motion.",
       icon: Bolt,
       tone: "text-cyan"
     },
     {
       label: "Read",
-      value: "Narrative + structure",
-      detail: "Facts first, story second, traps visible.",
+      value: "Frontier-model thesis",
+      detail: "AI turns market and wallet data into an actionable setup read.",
       icon: Radar,
       tone: "text-white/80"
     },
     {
       label: "Defend",
-      value: "Risks above fold",
-      detail: "Security, bundles, and breakers stay prominent.",
+      value: "Breakers above fold",
+      detail: "Risk framing, concentration, and control flags stay prominent.",
       icon: ShieldAlert,
       tone: "text-ember"
     },
     {
       label: "Route",
-      value: "Desktop dense / mobile clean",
-      detail: "Built to stay useful when the screen gets tight.",
+      value: "Desktop dense / mobile sharp",
+      detail: "AI-led decision support without losing speed on smaller screens.",
       icon: Waypoints,
       tone: "text-lime"
     }
@@ -118,13 +118,13 @@ export function AnalysisScreen({ mode, initialMint }: AnalysisScreenProps) {
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl">
             <div className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[11px] uppercase tracking-[0.24em] text-mute">
-              {mode === "home" ? "Discovery route" : "Dedicated token route"}
+              {mode === "home" ? "AI-first discovery route" : "Dedicated AI decision route"}
             </div>
             <h1 className="mt-3 text-2xl font-semibold tracking-[-0.04em] text-ink sm:text-3xl">
-              Fast Solana contract reads for memecoin traders.
+              Frontier AI memecoin decisions for Solana traders.
             </h1>
             <p className="mt-2 text-sm leading-6 text-mute sm:text-base">
-              Clean hierarchy, sharp signal separation, and quick route-hopping when you are comparing setups.
+              Fast contract reads, AI-written setup framing, and clean signal separation when you are comparing entries, trims, and skips.
             </p>
           </div>
 
@@ -140,7 +140,7 @@ export function AnalysisScreen({ mode, initialMint }: AnalysisScreenProps) {
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="terminal-heading">Command deck</p>
-                <p className="mt-2 text-base font-semibold text-ink">Built for fast trench decisions, not dashboard tourism.</p>
+                <p className="mt-2 text-base font-semibold text-ink">Built for AI-led memecoin decisions, not passive dashboard browsing.</p>
               </div>
               <div className="rounded-full border border-lime/20 bg-lime/[0.08] px-3 py-1 text-xs uppercase tracking-[0.18em] text-lime">
                 Mobile ready
@@ -185,7 +185,7 @@ export function AnalysisScreen({ mode, initialMint }: AnalysisScreenProps) {
         {state.status === "idle" ? (
           <EmptyState
             title="Load a Solana mint"
-            description="The report shell is ready. Paste a mint to inspect setup quality, scenario ranges, holder structure, and what can break the trade."
+            description="The AI decision engine is ready. Paste a mint to generate setup framing, market scenarios, holder structure, and trade breakers."
           />
         ) : null}
 
@@ -198,7 +198,7 @@ export function AnalysisScreen({ mode, initialMint }: AnalysisScreenProps) {
         {state.status === "empty" ? (
           <EmptyState
             title="No analysis returned"
-            description="The API completed but did not return a normalized report object for this mint. Check the mint or the backend response shape and try again."
+            description="The AI pipeline completed but no normalized report object came back for this mint. Check the mint or the backend response shape and try again."
           />
         ) : null}
 

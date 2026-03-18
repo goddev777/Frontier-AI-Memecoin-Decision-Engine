@@ -24,9 +24,9 @@ const mono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CA Suggestions | Trench Intel",
+  title: "Frontier AI Memecoin Terminal",
   description:
-    "Premium Solana memecoin analysis terminal for reviewing setup quality, downside triggers, and scenario ranges."
+    "AI-first Solana memecoin decision terminal using frontier models for setup reads, risk framing, and market-cap scenarios."
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

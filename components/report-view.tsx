@@ -116,10 +116,10 @@ function getAiStatus(report: AnalysisReport) {
 
   if (enrichment?.status === "error") {
     return {
-      title: "AI narrative layer failed",
+      title: "AI decision layer failed",
       description:
         enrichment.summary ||
-        "OpenRouter was attempted, but the report kept the deterministic readout after enrichment failed.",
+        "The frontier-model pass was attempted, but the report had to fall back after the AI decision layer failed.",
       tone: "border-ember/25 bg-ember/[0.11] text-ember",
       meta: [enrichment.provider, enrichment.model].filter(Boolean).join(" | ")
     };
@@ -127,10 +127,10 @@ function getAiStatus(report: AnalysisReport) {
 
   if (enrichment?.available && enrichment.enabled) {
     return {
-      title: "AI narrative layer live",
+      title: "Frontier AI live",
       description:
         enrichment.summary ||
-        "OpenRouter enrichment is active on top of the deterministic scoring and scenario engine.",
+        "The frontier-model layer is actively writing the setup, thesis, and risk framing on top of the live data engine.",
       tone: "border-lime/20 bg-lime/[0.11] text-lime",
       meta: [enrichment.provider, enrichment.model].filter(Boolean).join(" | ")
     };
@@ -141,17 +141,17 @@ function getAiStatus(report: AnalysisReport) {
       title: "AI layer reachable",
       description:
         enrichment.summary ||
-        "OpenRouter is configured, but this view is still primarily leaning on the deterministic report path.",
+        "The model stack is reachable, but this view is still leaning more heavily on the structured data path.",
       tone: "border-cyan/20 bg-cyan/[0.1] text-cyan",
       meta: [enrichment.provider, enrichment.model].filter(Boolean).join(" | ")
     };
   }
 
   return {
-    title: "Deterministic mode only",
+    title: "AI layer offline",
     description:
       enrichment?.summary ||
-      "AI enrichment is disabled or unavailable, so this report is driven entirely by deterministic provider analysis.",
+      "The frontier-model layer is disabled or unavailable, so this report is being held up by the structured provider stack alone.",
     tone: "border-white/10 bg-white/[0.05] text-ink",
     meta: enrichment?.provider || "OpenRouter layer offline"
   };
@@ -281,7 +281,7 @@ function ScenarioList({ items }: { items: AnalysisScenario[] }) {
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <p className="text-base font-semibold text-ink">{scenario.name}</p>
-              <p className="mt-1 text-xs uppercase tracking-[0.18em] text-cyan">Probability {scenario.probability}</p>
+              <p className="mt-1 text-xs uppercase tracking-[0.18em] text-cyan">AI scenario {scenario.probability}</p>
             </div>
             <div className="rounded-full border border-white/10 bg-black/25 px-3 py-1 text-xs uppercase tracking-[0.16em] text-mute">
               {formatCurrency(scenario.marketCapLowUsd)} to {formatCurrency(scenario.marketCapHighUsd)}
@@ -314,7 +314,7 @@ function RiskList({ items }: { items: AnalysisRisk[] }) {
   if (!items.length) {
     return (
       <div className="rounded-[24px] border border-cyan/20 bg-cyan/[0.1] p-4 text-sm leading-6 text-ink">
-        No explicit breakers were returned. Treat this as incomplete coverage rather than a clean bill of health.
+        No explicit breakers were returned. Treat that as incomplete AI coverage, not a clean bill of health.
       </div>
     );
   }
@@ -386,7 +386,7 @@ export function ReportView({ report }: { report: AnalysisReport }) {
             <div className="space-y-4">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                 <div className="max-w-3xl">
-                  <p className="terminal-heading text-cyan">Live trench readout</p>
+                  <p className="terminal-heading text-cyan">Live AI decision readout</p>
                   <h2 className="mt-3 text-4xl font-semibold tracking-[-0.05em] text-balance text-ink sm:text-5xl">
                     {report.token.name}
                   </h2>
@@ -397,7 +397,7 @@ export function ReportView({ report }: { report: AnalysisReport }) {
                   href={`/token/${encodeURIComponent(report.mint)}`}
                   className="inline-flex items-center gap-2 rounded-[20px] border border-white/10 bg-white/[0.05] px-4 py-3 text-sm font-medium text-ink transition hover:border-cyan/35 hover:text-cyan"
                 >
-                  Open token route
+                  Open decision route
                   <ArrowUpRight className="h-4 w-4" />
                 </a>
               </div>
@@ -478,7 +478,7 @@ export function ReportView({ report }: { report: AnalysisReport }) {
                   <p className="mt-2 text-sm font-semibold text-ink">{report.bundles.status}</p>
                 </div>
                 <div className="rounded-[20px] border border-white/10 bg-white/[0.05] p-3">
-                  <p className="terminal-heading">AI mode</p>
+                  <p className="terminal-heading">AI status</p>
                   <p className="mt-2 text-sm font-semibold text-ink">{aiStatus.title}</p>
                 </div>
               </div>
@@ -487,7 +487,7 @@ export function ReportView({ report }: { report: AnalysisReport }) {
             <div className={`rounded-[28px] border p-4 ${aiStatus.tone}`}>
               <div className="flex items-center gap-2">
                 <Bot className="h-4 w-4" />
-                <p className="terminal-heading !text-current">AI enrichment</p>
+                <p className="terminal-heading !text-current">AI decision layer</p>
               </div>
               <p className="mt-3 text-lg font-semibold text-ink">{aiStatus.title}</p>
               <p className="mt-2 text-sm leading-6 text-mute">{aiStatus.description}</p>
@@ -503,15 +503,15 @@ export function ReportView({ report }: { report: AnalysisReport }) {
       </section>
 
       <div className="grid gap-4 xl:grid-cols-[0.95fr,0.95fr,1.1fr]">
-        <Panel title="Facts" subtitle="Observed metrics and hard anchors from the provider mix.">
+        <Panel title="Facts" subtitle="Observed metrics and hard anchors feeding the AI decision stack.">
           <FactList items={report.facts} />
         </Panel>
 
-        <Panel title="Signals" subtitle="Interpreted quality tells worth watching as the setup evolves.">
+        <Panel title="Signals" subtitle="Interpreted quality tells the model and trader should watch as the setup evolves.">
           <FactList items={report.signals} />
         </Panel>
 
-        <Panel title="Scenario map" subtitle="Bull, base, and failure-case market-cap windows for quick sizing.">
+        <Panel title="Scenario map" subtitle="AI-framed bull, base, and failure-case market-cap windows for quick sizing.">
           <ScenarioList items={report.scenarios} />
         </Panel>
       </div>
@@ -519,7 +519,7 @@ export function ReportView({ report }: { report: AnalysisReport }) {
       <div className="grid gap-4 xl:grid-cols-[0.95fr,1.05fr]">
         <Panel
           title="Risk board"
-          subtitle="Breakers and caution flags stay close to the thesis so skips are faster."
+          subtitle="Breakers and caution flags stay close to the AI thesis so skips are faster."
           action={
             <div className="rounded-full border border-ember/20 bg-ember/[0.1] px-3 py-1 text-xs uppercase tracking-[0.18em] text-ember">
               Review before entry

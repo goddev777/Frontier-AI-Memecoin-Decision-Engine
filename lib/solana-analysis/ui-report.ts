@@ -325,7 +325,7 @@ function aiEnrichment(report: EngineAnalysisReport): UiAnalysisReport["aiEnrichm
       enabled: false,
       provider: "OpenRouter",
       status: "unavailable",
-      summary: "OpenRouter enrichment did not run for this report."
+      summary: "The frontier AI layer did not run for this report."
     };
   }
 
@@ -350,7 +350,7 @@ function aiEnrichment(report: EngineAnalysisReport): UiAnalysisReport["aiEnrichm
       provider: "OpenRouter",
       model,
       status: "unavailable",
-      summary: noteSummary || "OpenRouter is not configured, so only deterministic analysis is active.",
+      summary: noteSummary || "OpenRouter is not configured, so the frontier AI layer is unavailable for this report.",
       updatedAt: report.analyzedAt
     };
   }
@@ -362,7 +362,7 @@ function aiEnrichment(report: EngineAnalysisReport): UiAnalysisReport["aiEnrichm
       provider: "OpenRouter",
       model,
       status: "error",
-      summary: noteSummary || "OpenRouter enrichment failed, so the deterministic report remained in place.",
+      summary: noteSummary || "OpenRouter failed during report generation, so the structured fallback held the view together.",
       updatedAt: report.analyzedAt
     };
   }
@@ -373,7 +373,7 @@ function aiEnrichment(report: EngineAnalysisReport): UiAnalysisReport["aiEnrichm
     provider: "OpenRouter",
     model,
     status: "disabled",
-    summary: noteSummary || "OpenRouter was reachable, but its output was slow or empty so the deterministic report stayed primary.",
+    summary: noteSummary || "OpenRouter was reachable, but its output was slow or empty so the structured fallback stayed primary.",
     updatedAt: report.analyzedAt
   };
 }
