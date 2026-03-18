@@ -98,7 +98,8 @@ describe("toUiAnalysisReport", () => {
     expect(uiReport.mint).toBe(engineReport.address);
     expect(uiReport.score.recommendation).toBe("BUY");
     expect(uiReport.aiEnrichment?.enabled).toBe(true);
-    expect(uiReport.aiEnrichment?.model).toBe("openrouter/free");
+    expect(uiReport.aiEnrichment?.model).toBeUndefined();
+    expect(uiReport.aiEnrichment?.provider).toBeUndefined();
     expect("sources" in uiReport).toBe(false);
     expect("bundleCount" in uiReport.bundles).toBe(true);
     expect(uiReport.facts.length).toBeGreaterThan(3);

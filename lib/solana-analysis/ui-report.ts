@@ -323,20 +323,16 @@ function aiEnrichment(report: EngineAnalysisReport): UiAnalysisReport["aiEnrichm
     return {
       available: false,
       enabled: false,
-      provider: "OpenRouter",
       status: "unavailable",
       summary: "The frontier AI layer did not run for this report."
     };
   }
 
-  const model = source.note?.startsWith("Model:") ? source.note.replace("Model:", "").trim() : undefined;
   const noteSummary = source.note?.startsWith("Model:") ? undefined : source.note;
   if (source.status === "success") {
     return {
       available: true,
       enabled: true,
-      provider: "OpenRouter",
-      model,
       status: "available",
       summary: "OpenRouter is generating the setup, thesis, risk framing, and narrative across the report.",
       updatedAt: report.analyzedAt
@@ -347,8 +343,6 @@ function aiEnrichment(report: EngineAnalysisReport): UiAnalysisReport["aiEnrichm
     return {
       available: false,
       enabled: false,
-      provider: "OpenRouter",
-      model,
       status: "unavailable",
       summary: noteSummary || "OpenRouter is not configured, so the frontier AI layer is unavailable for this report.",
       updatedAt: report.analyzedAt
@@ -359,8 +353,6 @@ function aiEnrichment(report: EngineAnalysisReport): UiAnalysisReport["aiEnrichm
     return {
       available: false,
       enabled: false,
-      provider: "OpenRouter",
-      model,
       status: "error",
       summary: noteSummary || "OpenRouter failed during report generation, so the structured fallback held the view together.",
       updatedAt: report.analyzedAt
@@ -370,8 +362,6 @@ function aiEnrichment(report: EngineAnalysisReport): UiAnalysisReport["aiEnrichm
   return {
     available: true,
     enabled: false,
-    provider: "OpenRouter",
-    model,
     status: "disabled",
     summary: noteSummary || "OpenRouter was reachable, but its output was slow or empty so the structured fallback stayed primary.",
     updatedAt: report.analyzedAt
