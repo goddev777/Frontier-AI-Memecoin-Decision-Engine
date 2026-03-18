@@ -36,6 +36,7 @@
 - Current status at end of this session: tests passing, production build passing.
 - Live local dev server still responds with HTTP 200 after the redesign pass.
 - After wiring local credentials, a live BONK analysis request returned successfully using the fallback stack, and timeout guards were added to keep slow providers/models from hanging the route indefinitely.
+- A real UX regression came from dead demo mints, not a globally broken fetch layer: the previous `WIF` and `POPCAT` sample CAs no longer resolved through DexScreener/Helius, so they were replaced with live `JUP` and `FART` presets.
 - Verified after cleanup that the live API payload no longer exposes `sources` or `bubbleMap`.
 - Direct OpenRouter calls with the compact JSON prompt succeed locally, but `hunter-alpha` still carries noticeable latency for full report generation compared with simpler prompts.
 - Edge cases tightened after review: unknown security data no longer reads as renounced/safe, missing market-cap scenarios no longer render as `$0-$0`, OpenRouter hard failures surface as failures, and concentration proxy status no longer defaults to low risk when data is missing.

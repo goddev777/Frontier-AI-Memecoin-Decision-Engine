@@ -4,8 +4,8 @@ import { AlertTriangle, LoaderCircle, RefreshCcw, SearchX } from "lucide-react";
 
 const SAMPLE_LOOKUPS = [
   { label: "BONK", mint: "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263" },
-  { label: "WIF", mint: "EKpQGSJtjMFqKZr4fH3HwQG1L7qTeYquH5Qnntd2cJ3N" },
-  { label: "POPCAT", mint: "7GCihgDB8fe6knqQnKJqTrJ7L1C3YKu7wgoS6CXwaGJv" }
+  { label: "JUP", mint: "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN" },
+  { label: "FART", mint: "9BB6NFEcjBCtnNLFko2FqVQBq8HHM13kCyYcdQbgpump" }
 ] as const;
 
 type ErrorStateProps = {

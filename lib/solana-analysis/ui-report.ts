@@ -378,10 +378,29 @@ function aiEnrichment(report: EngineAnalysisReport): UiAnalysisReport["aiEnrichm
   };
 }
 
+function fallbackTokenName(report: EngineAnalysisReport) {
+  if (report.token.name) {
+    return report.token.name;
+  }
+
+  if (report.token.symbol) {
+    return report.token.symbol;
+  }
+
+  return "Unrouted mint";
+}
+
 export function toUiAnalysisReport(
   report: EngineAnalysisReport,
   snapshot: ProviderSnapshot
 ): UiAnalysisReport {
+  const hasConfirmedPair = Boolean(report.market.selectedPair);
+  const noMarketRouteSummary =
+    "DexScreener did not return a live Solana pair for this mint, so market cap, liquidity, and momentum fields stay blank until a route appears.";
+  const noMarketRouteNarrative =
+    "This CA did not resolve to a live DexScreener trading route during the lookup window. The AI layer can still summarize partial metadata, but it should not be treated like a full market read.";
+  const noMarketRouteBreakers =
+    "No active pair means there is no reliable live price discovery here yet. Treat this as unconfirmed until a real market route and stronger holder coverage show up.";
   const recommendation = recommendationLabel(report.recommendation.label);
   const notableWalletSummary = report.distribution.notableWallets.length
     ? report.distribution.notableWallets
@@ -409,7 +428,7 @@ export function toUiAnalysisReport(
   return {
     mint: report.address,
     token: {
-      name: report.token.name || "Unknown token",
+      name: fallbackTokenName(report),
       symbol: report.token.symbol || "UNKNOWN",
       chain: "Solana",
       launchedAt: undefined,
@@ -435,11 +454,16 @@ export function toUiAnalysisReport(
       riskLevel: riskLevel(report)
     },
     summary: {
-      setup: report.aiSummary?.setup || report.recommendation.summary,
-      whySurfaced: report.aiSummary?.whySurfaced || report.recommendation.rationale.slice(0, 2).join(" "),
-      narrative: report.aiSummary?.narrative || report.narrative,
+      setup: report.aiSummary?.setup || (hasConfirmedPair ? report.recommendation.summary : noMarketRouteSummary),
+      whySurfaced:
+        report.aiSummary?.whySurfaced ||
+        (hasConfirmedPair
+          ? report.recommendation.rationale.slice(0, 2).join(" ")
+          : "The lookup completed, but upstream market-route coverage was too thin to produce a real trading read."),
+      narrative: report.aiSummary?.narrative || (hasConfirmedPair ? report.narrative : noMarketRouteNarrative),
       whatCanBreak: (
         report.aiSummary?.whatCanBreak ||
+        (!hasConfirmedPair ? noMarketRouteBreakers : undefined) ||
         report.recommendation.caveats.join(" ") ||
         buildRisks(report)
           .slice(0, 2)

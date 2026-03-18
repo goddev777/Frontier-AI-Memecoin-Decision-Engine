@@ -18,14 +18,14 @@ const SAMPLE_MINTS = [
     note: "High-recognition meme benchmark"
   },
   {
-    label: "WIF",
-    mint: "EKpQGSJtjMFqKZr4fH3HwQG1L7qTeYquH5Qnntd2cJ3N",
-    note: "Clean trench benchmark"
+    label: "JUP",
+    mint: "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN",
+    note: "Deep-liquidity routing benchmark"
   },
   {
-    label: "POPCAT",
-    mint: "7GCihgDB8fe6knqQnKJqTrJ7L1C3YKu7wgoS6CXwaGJv",
-    note: "Narrative-heavy meme runner"
+    label: "FART",
+    mint: "9BB6NFEcjBCtnNLFko2FqVQBq8HHM13kCyYcdQbgpump",
+    note: "High-beta meme momentum read"
   }
 ] as const;
 
