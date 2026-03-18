@@ -1,8 +1,8 @@
-# CA Suggestions
+# Frontier AI Memecoin Decision Engine
 
-`CA Suggestions` is a Vercel-ready Next.js webapp for fast Solana token triage, built for memecoin traders who want a quick but structured read on a contract address before acting.
+`Frontier AI Memecoin Decision Engine` is a Vercel-ready Next.js webapp for fast Solana token triage, built for memecoin traders who want a quick but structured read on a contract address before acting.
 
-The app takes any Solana mint, fans out across market/on-chain/security providers, and compiles a trench-friendly report with:
+The app takes any Solana mint, runs the server-side analysis stack, and compiles a trench-friendly report with:
 
 - setup summary
 - facts / signals / scenarios
@@ -11,44 +11,31 @@ The app takes any Solana mint, fans out across market/on-chain/security provider
 - security warnings
 - buy / watch / avoid style guidance
 - scenario market-cap ranges
-- optional OpenRouter free-model narrative enrichment layered on top of a deterministic core
+- AI-written setup framing layered on top of a structured scoring core
 
 ## Stack
 
 - Next.js App Router
 - TypeScript
 - Tailwind CSS
-- Server-side provider fan-out for Vercel Node runtime
-
-## Provider Strategy
-
-- `DexScreener`: public pair, liquidity, volume, and price context
-- `Helius` / `Solana RPC`: metadata and fallback token account information
-- `OpenRouter`: optional AI narrative enrichment, defaulting to `openrouter/free`
-
-The report is intentionally designed to degrade gracefully. Missing API keys should produce partial data and cautious copy, not hard crashes.
+- Server-side analysis runtime for Vercel Node
 
 ## Environment
 
-Copy `.env.example` and fill what you want to enable:
+Copy `.env.example` locally and fill the required server-side values:
 
 ```bash
-HELIUS_API_KEY=
-SOLANA_RPC_URL=
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 NEXT_PUBLIC_ANALYSIS_API_PATH=/api/analysis
-OPENROUTER_API_KEY=
-OPENROUTER_MODEL=openrouter/free
-OPENROUTER_HTTP_REFERER=http://localhost:3000
-OPENROUTER_APP_TITLE=CA Suggestions
+SERVER_CHAIN_KEY=
+SERVER_CHAIN_RPC_URL=
+SERVER_AI_KEY=
+SERVER_AI_MODEL=
+SERVER_APP_REFERER=http://localhost:3000
+SERVER_APP_TITLE=Frontier AI Memecoin Decision Engine
 ```
 
-Notes:
-
-- `HELIUS_API_KEY` and `SOLANA_RPC_URL` are the main on-chain enrichment inputs for this build.
-- `OPENROUTER_API_KEY` is optional. If omitted, the app keeps the deterministic report path only.
-- `NEXT_PUBLIC_ANALYSIS_API_PATH` only matters if you want the frontend to call a non-default analysis endpoint. The default is `/api/analysis`.
-- Keep secret keys in server-side env vars only. Do not use `NEXT_PUBLIC_` for Helius or OpenRouter secrets.
+Keep secret keys in server-side env vars only. Do not put any secret in a `NEXT_PUBLIC_` variable.
 
 ## Local Development
 
@@ -71,16 +58,14 @@ The suite covers:
 - scenario generation
 - conservative recommendation behavior under low completeness
 - invalid-address safety
-- OpenRouter fallback and sanitization behavior
+- AI fallback and sanitization behavior
 
 ## Vercel Deployment
 
 1. Import the project into Vercel.
-2. Add the environment variables you want enabled.
+2. Add the required server-side environment variables in Vercel.
 3. Deploy with the default Node runtime.
 
 This codebase is shaped for on-demand analysis, not long-running websocket ingestion. If you later want always-on new-pair streaming, run that as a separate worker and let this app read cached results.
 
-## Current Constraint
-
-The app is designed to degrade gracefully when some providers are unavailable. Missing API keys should reduce coverage and confidence, not crash the experience.
+The app is designed to degrade gracefully when some upstream services are unavailable. Missing credentials should reduce coverage and confidence, not crash the experience.

@@ -167,17 +167,10 @@ export function AnalysisScreen({ mode, initialMint }: AnalysisScreenProps) {
             <div className="my-5 terminal-rule" />
 
             <div className="rounded-[24px] border border-white/10 bg-black/20 p-4">
-              <p className="terminal-heading">Provider mesh</p>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {["DexScreener", "Helius", "Solana RPC", "OpenRouter"].map((item) => (
-                  <div
-                    key={item}
-                    className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-xs uppercase tracking-[0.16em] text-mute"
-                  >
-                    {item}
-                  </div>
-                ))}
-              </div>
+              <p className="terminal-heading">Intelligence stack</p>
+              <p className="mt-3 text-sm leading-6 text-mute">
+                Live market structure, onchain context, and frontier AI synthesis are fused into one fast decision surface.
+              </p>
             </div>
           </aside>
         </div>

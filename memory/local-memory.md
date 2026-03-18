@@ -7,6 +7,7 @@
 - The user does not want secrets exposed; Helius and OpenRouter keys must remain server-only and never be moved into `NEXT_PUBLIC_` env vars.
 - The user wants OpenRouter AI to be the main differentiator, not an optional side note; AI should drive the report text when available.
 - The product’s outward positioning should be AI-first and frontier-model-led; avoid branding it as “AI optional” even when structured fallback paths still exist underneath.
+- When shipping publicly, avoid exposing provider names, model identifiers, or infrastructure details in the webpage or public-facing docs unless they are truly necessary.
 
 ## Project Essentials
 - Product: a Solana contract-address analysis webapp for memecoin/new-pair traders ("trenchers").

@@ -121,7 +121,7 @@ function getAiStatus(report: AnalysisReport) {
         enrichment.summary ||
         "The frontier-model pass was attempted, but the report had to fall back after the AI decision layer failed.",
       tone: "border-ember/25 bg-ember/[0.11] text-ember",
-      meta: [enrichment.provider, enrichment.model].filter(Boolean).join(" | ")
+      meta: enrichment.model ? "AI layer degraded" : undefined
     };
   }
 
@@ -132,7 +132,7 @@ function getAiStatus(report: AnalysisReport) {
         enrichment.summary ||
         "The frontier-model layer is actively writing the setup, thesis, and risk framing on top of the live data engine.",
       tone: "border-lime/20 bg-lime/[0.11] text-lime",
-      meta: [enrichment.provider, enrichment.model].filter(Boolean).join(" | ")
+      meta: "Frontier synthesis active"
     };
   }
 
@@ -143,7 +143,7 @@ function getAiStatus(report: AnalysisReport) {
         enrichment.summary ||
         "The model stack is reachable, but this view is still leaning more heavily on the structured data path.",
       tone: "border-cyan/20 bg-cyan/[0.1] text-cyan",
-      meta: [enrichment.provider, enrichment.model].filter(Boolean).join(" | ")
+      meta: "AI routing available"
     };
   }
 
@@ -153,7 +153,7 @@ function getAiStatus(report: AnalysisReport) {
       enrichment?.summary ||
       "The frontier-model layer is disabled or unavailable, so this report is being held up by the structured provider stack alone.",
     tone: "border-white/10 bg-white/[0.05] text-ink",
-    meta: enrichment?.provider || "OpenRouter layer offline"
+    meta: "AI routing unavailable"
   };
 }
 
