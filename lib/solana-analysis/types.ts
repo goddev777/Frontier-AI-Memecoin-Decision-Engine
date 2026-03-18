@@ -334,7 +334,7 @@ export interface NotableWallet {
   label: string;
   balance?: number;
   sharePct?: number;
-  activity: "holder" | "trader";
+  activity: "holder" | "trader" | "authority";
   summary: string;
 }
 
@@ -365,6 +365,7 @@ export interface TokenDistributionData {
   totalSupply?: number;
   circulatingSupply?: number;
   holderCount?: number;
+  sampledHolderCount?: number;
   top10HolderPct?: number;
   largestHolderPct?: number;
   notableWallets: NotableWallet[];

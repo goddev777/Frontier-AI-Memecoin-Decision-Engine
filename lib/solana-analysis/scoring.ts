@@ -447,6 +447,9 @@ export function synthesizeNarrative(report: AnalysisReport): string {
     report.distribution.top10HolderPct !== undefined
       ? `top-10 wallets hold about ${round(report.distribution.top10HolderPct, 1)}% of supply`
       : undefined,
+    report.distribution.holderCount === undefined && report.distribution.sampledHolderCount !== undefined
+      ? `RPC surfaced ${report.distribution.sampledHolderCount} large token accounts, but full holder count is still unknown`
+      : undefined,
   ]
     .filter((value): value is string => Boolean(value))
     .join(", ");

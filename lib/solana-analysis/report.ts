@@ -44,6 +44,17 @@ function dedupeWallets(wallets: NotableWallet[]): NotableWallet[] {
   });
 }
 
+function summarizeAuthorityScopes(scopes?: string[]): string {
+  if (!scopes?.length) {
+    return "authority permissions";
+  }
+
+  return scopes
+    .slice(0, 2)
+    .map((scope) => scope.replaceAll("_", " "))
+    .join(" / ");
+}
+
 function deriveSelectedPair(
   address: string,
   snapshot: ProviderSnapshot,
@@ -112,6 +123,7 @@ function deriveMarket(address: string, snapshot: ProviderSnapshot): TokenMarketD
 function deriveSecurity(snapshot: ProviderSnapshot): TokenSecurityData {
   const security = snapshot.birdeye?.security;
   const helius = snapshot.helius?.token_info;
+  const heliusAuthorities = snapshot.helius?.authorities ?? [];
   const rpcMint = snapshot.rpc?.mint;
   const mintAuthority = helius?.mint_authority ?? rpcMint?.mintAuthority;
   const freezeAuthority = helius?.freeze_authority ?? rpcMint?.freezeAuthority;
@@ -135,7 +147,10 @@ function deriveSecurity(snapshot: ProviderSnapshot): TokenSecurityData {
     transferFeeEnabled: security?.transferFeeEnable,
     mintAuthority: mintAuthority ?? null,
     freezeAuthority: freezeAuthority ?? null,
-    creatorAddress: security?.creatorAddress,
+    creatorAddress:
+      security?.creatorAddress ??
+      heliusAuthorities.find((authority) => authority.address)?.address ??
+      snapshot.helius?.ownership?.owner,
     verified:
       security?.mutableMetadata === false &&
       mintable === false &&
@@ -243,13 +258,13 @@ function summarizeHolders(snapshot: ProviderSnapshot, totalSupply?: number): Not
           : undefined;
       wallets.push({
         address: account.address,
-        label: `Large RPC holder ${wallets.length + 1}`,
+        label: `Large token account ${wallets.length + 1}`,
         balance,
         sharePct,
         activity: "holder",
         summary:
           sharePct !== undefined
-            ? `holds roughly ${round(sharePct, 2)}% of reported supply`
+            ? `shows roughly ${round(sharePct, 2)}% of reported supply in the RPC largest-account sample`
             : "shows up in the largest-account RPC sample",
       });
     }
@@ -269,6 +284,50 @@ function summarizeHolders(snapshot: ProviderSnapshot, totalSupply?: number): Not
         trader.volume !== undefined
           ? `moved about $${Math.round(trader.volume).toLocaleString()} over the sampled period`
           : "appears in the top-trader sample",
+      });
+  }
+
+  const authorityAddresses = new Map<string, string>();
+  for (const authority of snapshot.helius?.authorities ?? []) {
+    if (!authority.address) {
+      continue;
+    }
+
+    authorityAddresses.set(
+      authority.address,
+      authority.scopes?.length
+        ? `${summarizeAuthorityScopes(authority.scopes)} surfaced via Helius authorities`
+        : "authority surfaced via Helius asset metadata"
+    );
+  }
+
+  if (snapshot.helius?.ownership?.owner) {
+    authorityAddresses.set(
+      snapshot.helius.ownership.owner,
+      "current asset owner surfaced via Helius metadata"
+    );
+  }
+
+  if (snapshot.helius?.token_info?.mint_authority) {
+    authorityAddresses.set(
+      snapshot.helius.token_info.mint_authority,
+      "mint authority remains active"
+    );
+  }
+
+  if (snapshot.helius?.token_info?.freeze_authority) {
+    authorityAddresses.set(
+      snapshot.helius.token_info.freeze_authority,
+      "freeze authority remains active"
+    );
+  }
+
+  for (const [address, summary] of authorityAddresses) {
+    wallets.push({
+      address,
+      label: `Authority ${wallets.length + 1}`,
+      activity: "authority",
+      summary,
     });
   }
 
@@ -291,6 +350,7 @@ function deriveDistribution(snapshot: ProviderSnapshot): TokenDistributionData {
     totalSupply,
     circulatingSupply,
     holderCount: snapshot.birdeye?.holders?.total,
+    sampledHolderCount: snapshot.rpc?.largestAccounts?.length,
     top10HolderPct: deriveTop10HolderPct(snapshot, totalSupply),
     largestHolderPct: deriveLargestHolderPct(snapshot, totalSupply),
     notableWallets: summarizeHolders(snapshot, totalSupply),

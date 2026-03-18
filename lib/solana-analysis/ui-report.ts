@@ -45,6 +45,18 @@ function compact(value?: number | null) {
   }).format(value);
 }
 
+function holderVisibilityDetail(report: EngineAnalysisReport) {
+  if (report.distribution.holderCount !== undefined) {
+    return `${compact(report.distribution.holderCount)} holders were surfaced in the available dataset.`;
+  }
+
+  if (report.distribution.sampledHolderCount !== undefined) {
+    return `Total holder count is unknown, but RPC surfaced ${compact(report.distribution.sampledHolderCount)} large token accounts for concentration checks.`;
+  }
+
+  return "Holder count is only partially visible.";
+}
+
 function toneFromScore(score: number): AnalysisFact["tone"] {
   if (score >= 72) {
     return "positive";
@@ -152,11 +164,13 @@ function buildFacts(report: EngineAnalysisReport): AnalysisFact[] {
     },
     {
       label: "Holders",
-      value: compact(report.distribution.holderCount),
-      detail:
+      value:
         report.distribution.holderCount !== undefined
-          ? `${compact(report.distribution.holderCount)} holders were surfaced in the available dataset.`
-          : "Holder count is only partially visible.",
+          ? compact(report.distribution.holderCount)
+          : report.distribution.sampledHolderCount !== undefined
+            ? `${compact(report.distribution.sampledHolderCount)} sampled`
+            : "N/A",
+      detail: holderVisibilityDetail(report),
       tone: report.distribution.holderCount && report.distribution.holderCount > 2_000 ? "positive" : "neutral"
     },
     {
@@ -329,18 +343,25 @@ function buildScenarios(report: EngineAnalysisReport): AnalysisScenario[] {
 function bundleStatus(report: EngineAnalysisReport, snapshot: ProviderSnapshot) {
   const clusterCount = snapshot.bubblemaps?.apiData?.clusters?.length;
   const top10 = report.distribution.top10HolderPct ?? 0;
+  const largestHolder = report.distribution.largestHolderPct ?? 0;
+  const usingProxy = clusterCount === undefined;
 
-  if (!report.isValid || (clusterCount === undefined && report.distribution.top10HolderPct === undefined)) {
+  if (
+    !report.isValid ||
+    (clusterCount === undefined &&
+      report.distribution.top10HolderPct === undefined &&
+      report.distribution.largestHolderPct === undefined)
+  ) {
     return "Bundle data unavailable";
   }
 
-  if ((clusterCount ?? 0) >= 6 || top10 >= 55) {
-    return "High cluster / bundle risk";
+  if ((clusterCount ?? 0) >= 6 || top10 >= 55 || largestHolder >= 18) {
+    return usingProxy ? "High concentration proxy risk" : "High cluster / bundle risk";
   }
-  if ((clusterCount ?? 0) >= 3 || top10 >= 35) {
-    return "Medium bundle risk";
+  if ((clusterCount ?? 0) >= 3 || top10 >= 35 || largestHolder >= 10) {
+    return usingProxy ? "Medium concentration proxy risk" : "Medium bundle risk";
   }
-  return "Low bundle risk";
+  return usingProxy ? "Low concentration proxy risk" : "Low bundle risk";
 }
 
 function lpStatus(report: EngineAnalysisReport) {
@@ -367,6 +388,7 @@ function aiEnrichment(report: EngineAnalysisReport): UiAnalysisReport["aiEnrichm
   }
 
   const model = source.note?.startsWith("Model:") ? source.note.replace("Model:", "").trim() : undefined;
+  const noteSummary = source.note?.startsWith("Model:") ? undefined : source.note;
   if (source.status === "success") {
     return {
       available: true,
@@ -386,7 +408,7 @@ function aiEnrichment(report: EngineAnalysisReport): UiAnalysisReport["aiEnrichm
       provider: "OpenRouter",
       model,
       status: "unavailable",
-      summary: source.note || "OpenRouter is not configured, so only deterministic analysis is active.",
+      summary: noteSummary || "OpenRouter is not configured, so only deterministic analysis is active.",
       updatedAt: report.analyzedAt
     };
   }
@@ -398,7 +420,7 @@ function aiEnrichment(report: EngineAnalysisReport): UiAnalysisReport["aiEnrichm
       provider: "OpenRouter",
       model,
       status: "error",
-      summary: source.note || "OpenRouter enrichment failed, so the deterministic report remained in place.",
+      summary: noteSummary || "OpenRouter enrichment failed, so the deterministic report remained in place.",
       updatedAt: report.analyzedAt
     };
   }
@@ -409,7 +431,7 @@ function aiEnrichment(report: EngineAnalysisReport): UiAnalysisReport["aiEnrichm
     provider: "OpenRouter",
     model,
     status: "disabled",
-    summary: source.note || "OpenRouter was reachable but its output was not used.",
+    summary: noteSummary || "OpenRouter was reachable, but its output was slow or empty so the deterministic report stayed primary.",
     updatedAt: report.analyzedAt
   };
 }
@@ -426,6 +448,23 @@ export function toUiAnalysisReport(
         .map((wallet) => `${wallet.label}: ${wallet.summary}`)
         .join(" ")
     : "No standout holder or trader wallet surfaced strongly enough to summarize.";
+  const holderConcentration =
+    report.distribution.top10HolderPct !== undefined
+      ? report.distribution.holderCount !== undefined
+        ? `Top 10 wallets hold ${formatPercent(report.distribution.top10HolderPct)} of visible supply.`
+        : `Top 10 visible token accounts hold ${formatPercent(report.distribution.top10HolderPct)} of reported supply in the RPC sample.`
+      : report.distribution.largestHolderPct !== undefined
+        ? `Largest visible token account holds ${formatPercent(report.distribution.largestHolderPct)} of supply in the RPC sample.`
+        : "Holder concentration is only partially visible.";
+  const holderCommentary =
+    report.distribution.holderCount === undefined && report.distribution.sampledHolderCount !== undefined
+      ? `${notableWalletSummary} RPC holder sampling is active, but total holder count is still unknown without a fuller indexer.`
+      : notableWalletSummary;
+  const bundleCommentary = clusterCount
+    ? `${clusterCount} holder clusters were surfaced by Bubblemaps.`
+    : report.distribution.top10HolderPct !== undefined || report.distribution.largestHolderPct !== undefined
+      ? "Bubblemaps API is unavailable, so bundle risk is estimated from RPC largest-account concentration instead of true cluster mapping."
+      : "No direct bundle or concentration sample was available.";
 
   return {
     mint: report.address,
@@ -473,21 +512,15 @@ export function toUiAnalysisReport(
     scenarios: buildScenarios(report),
     risks: buildRisks(report),
     holders: {
-      concentration:
-        report.distribution.top10HolderPct !== undefined
-          ? `Top 10 wallets hold ${formatPercent(report.distribution.top10HolderPct)} of visible supply.`
-          : "Holder concentration is only partially visible.",
+      concentration: holderConcentration,
       top10SharePct: report.distribution.top10HolderPct ?? null,
       freshWalletSharePct: null,
-      commentary: notableWalletSummary
+      commentary: holderCommentary
     },
     bundles: {
       status: bundleStatus(report, snapshot),
       bundleCount: clusterCount,
-      commentary:
-        clusterCount
-          ? `${clusterCount} holder clusters were surfaced by Bubblemaps.`
-          : "No direct bundle cluster data was returned, so bundle risk falls back to holder concentration."
+      commentary: bundleCommentary
     },
     security: {
       mintAuthority:

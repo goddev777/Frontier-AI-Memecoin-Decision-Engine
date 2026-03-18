@@ -392,4 +392,45 @@ describe("solana analysis scoring", () => {
     expect(snapshot.birdeye?.overview).toBeUndefined();
     expect(snapshot.warnings.some((warning) => warning.code === "BIRDEYE_PARTIAL_DATA")).toBe(true);
   });
+
+  it("derives fallback authority and holder-sample context without Birdeye", () => {
+    const report = buildAnalysisReport(
+      "So11111111111111111111111111111111111111112",
+      createSnapshot({
+        birdeye: undefined,
+        helius: {
+          authorities: [
+            {
+              address: "Auth111111111111111111111111111111111111111",
+              scopes: ["metadata", "freeze"]
+            }
+          ],
+          ownership: {
+            owner: "Owner11111111111111111111111111111111111111"
+          },
+          token_info: {
+            decimals: 9,
+            circulating_supply: 8_000_000,
+            mint_authority: "MintAuth1111111111111111111111111111111111",
+            freeze_authority: null
+          },
+          content: {
+            metadata: {
+              description: "Synthetic fixture token"
+            }
+          }
+        },
+        sources: [
+          { provider: "dexscreener", status: "success", fields: ["pairs"] },
+          { provider: "helius", status: "success", fields: ["asset"] },
+          { provider: "solana-rpc", status: "success", fields: ["mint"] }
+        ]
+      })
+    );
+
+    expect(report.security.creatorAddress).toBe("Auth111111111111111111111111111111111111111");
+    expect(report.distribution.sampledHolderCount).toBe(1);
+    expect(report.distribution.notableWallets.some((wallet) => wallet.activity === "authority")).toBe(true);
+    expect(report.narrative).toContain("RPC surfaced 1 large token accounts");
+  });
 });

@@ -125,4 +125,73 @@ describe("toUiAnalysisReport", () => {
     expect(uiReport.security.mintAuthority).toBe("Unknown");
     expect(uiReport.security.freezeAuthority).toBe("Unknown");
   });
+
+  it("surfaces RPC fallback messaging when holder totals and bubble clusters are unavailable", () => {
+    const engineReport = buildAnalysisReport("So11111111111111111111111111111111111111112", {
+      dexScreener: {
+        pairs: createSnapshot().dexScreener?.pairs
+      },
+      helius: {
+        authorities: [
+          {
+            address: "Auth111111111111111111111111111111111111111",
+            scopes: ["metadata"]
+          }
+        ],
+        token_info: {
+          decimals: 9,
+          supply: 10_000_000,
+          circulating_supply: 8_000_000,
+          mint_authority: null,
+          freeze_authority: null
+        }
+      },
+      rpc: {
+        supply: {
+          amount: "10000000000000000",
+          decimals: 9,
+          uiAmount: 10_000_000,
+          uiAmountString: "10000000"
+        },
+        mint: {
+          decimals: 9,
+          mintAuthority: null,
+          freezeAuthority: null
+        },
+        largestAccounts: [
+          {
+            address: "Large111111111111111111111111111111111111111",
+            amount: "1600000000000000",
+            uiAmount: 1_600_000,
+            uiAmountString: "1600000"
+          }
+        ]
+      },
+      sources: [
+        { provider: "dexscreener", status: "success", fields: ["pairs"] },
+        { provider: "helius", status: "success", fields: ["asset"] },
+        { provider: "solana-rpc", status: "success", fields: ["mint"] }
+      ],
+      warnings: []
+    });
+
+    const uiReport = toUiAnalysisReport(engineReport, {
+      sources: engineReport.sources,
+      warnings: [],
+      rpc: {
+        largestAccounts: [
+          {
+            address: "Large111111111111111111111111111111111111111",
+            amount: "1600000000000000",
+            uiAmount: 1_600_000,
+            uiAmountString: "1600000"
+          }
+        ]
+      }
+    });
+
+    expect(uiReport.facts.find((fact) => fact.label === "Holders")?.value).toContain("sampled");
+    expect(uiReport.holders.commentary).toContain("RPC holder sampling is active");
+    expect(uiReport.bundles.commentary).toContain("RPC largest-account concentration");
+  });
 });

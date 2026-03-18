@@ -31,12 +31,25 @@ const DEFAULT_CONFIG: ProviderConfig = {
   openRouterBaseUrl: "https://openrouter.ai/api/v1",
   openRouterModel: "openrouter/free",
 };
+const DEFAULT_PROVIDER_TIMEOUT_MS = 12_000;
 
 interface FetchResult<T> {
   ok: boolean;
   status: number;
   data?: T;
   error?: string;
+}
+
+async function parseJsonWithTimeout<T>(
+  response: Response,
+  timeoutMs: number,
+): Promise<T> {
+  return (await Promise.race([
+    response.json() as Promise<T>,
+    new Promise<T>((_, reject) => {
+      setTimeout(() => reject(new Error(`Timed out after ${timeoutMs}ms`)), timeoutMs);
+    }),
+  ])) as T;
 }
 
 function getFetch(fetchImpl?: typeof fetch): typeof fetch {
@@ -113,8 +126,22 @@ async function safeFetchJson<T>(
   url: string,
   init?: RequestInit,
 ): Promise<FetchResult<T>> {
+  const controller = new AbortController();
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
   try {
-    const response = await fetchImpl(url, init);
+    const response = (await Promise.race([
+      fetchImpl(url, {
+        ...init,
+        signal: controller.signal,
+      }),
+      new Promise<Response>((_, reject) => {
+        timeoutId = setTimeout(() => {
+          controller.abort();
+          reject(new Error(`Timed out after ${DEFAULT_PROVIDER_TIMEOUT_MS}ms`));
+        }, DEFAULT_PROVIDER_TIMEOUT_MS);
+      }),
+    ])) as Response;
     if (!response.ok) {
       return {
         ok: false,
@@ -126,16 +153,22 @@ async function safeFetchJson<T>(
     return {
       ok: true,
       status: response.status,
-      data: (await response.json()) as T,
+      data: await parseJsonWithTimeout<T>(response, DEFAULT_PROVIDER_TIMEOUT_MS),
     };
   } catch (error) {
     const message =
-      error instanceof Error ? error.message : "Unknown fetch failure";
+      error instanceof Error
+        ? error.name === "AbortError" || /Timed out/.test(error.message)
+          ? `Timed out after ${DEFAULT_PROVIDER_TIMEOUT_MS}ms`
+          : error.message
+        : "Unknown fetch failure";
     return {
       ok: false,
       status: 0,
       error: message,
     };
+  } finally {
+    clearTimeout(timeoutId);
   }
 }
 

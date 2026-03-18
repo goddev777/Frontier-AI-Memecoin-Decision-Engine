@@ -14,6 +14,19 @@ interface NarrativeEnrichmentResult {
   source: SourceAttribution;
   warning?: AnalysisWarning;
 }
+const OPENROUTER_TIMEOUT_MS = 12_000;
+
+async function parseJsonWithTimeout<T>(
+  response: Response,
+  timeoutMs: number,
+): Promise<T | null> {
+  return (await Promise.race([
+    response.json() as Promise<T>,
+    new Promise<T | null>((_, reject) => {
+      setTimeout(() => reject(new Error(`OpenRouter timed out after ${timeoutMs}ms`)), timeoutMs);
+    }),
+  ])) as T | null;
+}
 
 function getFetch(fetchImpl?: typeof fetch): typeof fetch {
   if (fetchImpl) {
@@ -100,30 +113,49 @@ export async function enrichNarrativeWithOpenRouter(
 
   const fetchImpl = getFetch(options.fetchImpl);
   const url = `${config.openRouterBaseUrl}/chat/completions`;
-  const response = await fetchImpl(url, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${config.openRouterApiKey}`,
-      "content-type": "application/json",
-      ...(config.openRouterReferer
-        ? { "HTTP-Referer": config.openRouterReferer }
-        : {}),
-      ...(config.openRouterTitle ? { "X-Title": config.openRouterTitle } : {}),
-    },
-    body: JSON.stringify({
-      model: config.openRouterModel ?? "openrouter/free",
-      messages: buildNarrativePrompt(report),
-      temperature: 0.2,
+  const controller = new AbortController();
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  const response = await Promise.race([
+    fetchImpl(url, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${config.openRouterApiKey}`,
+        "content-type": "application/json",
+        ...(config.openRouterReferer
+          ? { "HTTP-Referer": config.openRouterReferer }
+          : {}),
+        ...(config.openRouterTitle ? { "X-Title": config.openRouterTitle } : {}),
+      },
+      body: JSON.stringify({
+        model: config.openRouterModel ?? "openrouter/free",
+        messages: buildNarrativePrompt(report),
+        temperature: 0.2,
+      }),
+      signal: controller.signal,
     }),
-  }).catch((error: unknown) => {
-    const message =
-      error instanceof Error ? error.message : "OpenRouter request failed";
-    return {
-      ok: false,
-      status: 0,
-      json: async () => ({ error: { message } }),
-    } as Response;
-  });
+    new Promise<Response>((_, reject) => {
+      timeoutId = setTimeout(() => {
+        controller.abort();
+        reject(new Error(`OpenRouter timed out after ${OPENROUTER_TIMEOUT_MS}ms`));
+      }, OPENROUTER_TIMEOUT_MS);
+    }),
+  ])
+    .catch((error: unknown) => {
+      const message =
+        error instanceof Error
+          ? error.name === "AbortError" || /timed out/i.test(error.message)
+            ? `OpenRouter timed out after ${OPENROUTER_TIMEOUT_MS}ms`
+            : error.message
+          : "OpenRouter request failed";
+      return {
+        ok: false,
+        status: 0,
+        json: async () => ({ error: { message } }),
+      } as Response;
+    })
+    .finally(() => {
+      clearTimeout(timeoutId);
+    });
 
   if (!response.ok) {
     return {
@@ -145,8 +177,10 @@ export async function enrichNarrativeWithOpenRouter(
     };
   }
 
-  const payload =
-    (await response.json().catch(() => null)) as OpenRouterChatCompletionResponse | null;
+  const payload = await parseJsonWithTimeout<OpenRouterChatCompletionResponse>(
+    response,
+    OPENROUTER_TIMEOUT_MS,
+  ).catch(() => null);
   const model =
     payload?.model ?? config.openRouterModel ?? "openrouter/free";
   const content = payload?.choices?.[0]?.message?.content;
