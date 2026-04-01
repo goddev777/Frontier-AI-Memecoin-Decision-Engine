@@ -117,8 +117,18 @@ export function AnalysisScreen({ mode, initialMint }: AnalysisScreenProps) {
       <div className="relative mx-auto max-w-7xl space-y-5 sm:space-y-6">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl">
-            <div className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[11px] uppercase tracking-[0.24em] text-mute">
-              {mode === "home" ? "AI-first discovery route" : "Dedicated AI decision route"}
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[11px] uppercase tracking-[0.24em] text-mute">
+                {mode === "home" ? "AI-first discovery route" : "Dedicated AI decision route"}
+              </div>
+              <a
+                href="https://x.com/goddev777"
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center rounded-full border border-cyan/20 bg-cyan/[0.08] px-3 py-1 text-[11px] uppercase tracking-[0.24em] text-cyan transition hover:border-cyan/40 hover:bg-cyan/[0.12]"
+              >
+                X @goddev777
+              </a>
             </div>
             <h1 className="mt-3 text-2xl font-semibold tracking-[-0.04em] text-ink sm:text-3xl">
               Frontier AI memecoin decisions for Solana traders.
